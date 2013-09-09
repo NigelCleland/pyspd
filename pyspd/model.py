@@ -35,7 +35,10 @@ class SPDModel(object):
 
         # Iterate over the difference instances:
 
-        pass
+        self.setup_lp()
+        self._create_variables()
+        self._obj_function()
+        self._nodal_demand()
 
     def _create_variables(self):
         """ Create all of the variables necessary to solve the Linear Program
@@ -46,7 +49,7 @@ class SPDModel(object):
         --------
         energy_total_offers
         reserve_total_offers
-        transmission_total_offers
+        branch_flow
         nodal_injection
         reserve_zone_risk
         """
@@ -58,7 +61,7 @@ class SPDModel(object):
         self.reserve_offers = self.lpDict("Reserve_Total",
                         self.ISO.reserve_station_names, 0)
 
-        self.transmission_offers = self.lpDict("Transmission_Total",
+        self.branch_flow = self.lpDict("Transmission_Total",
                         self.ISO.branch_names)
 
         self.nodal_injection = self.lpDict("Nodal_Injection",
@@ -70,7 +73,28 @@ class SPDModel(object):
 
     def _nodal_demand(self):
         """ Apply the nodal demand constraints """
-        pass
+        # Unpack variables
+
+        node_inj = self.nodal_injection
+        nodal_demand = self.ISO.nodal_demand
+        nodal_stations = self.ISO.nodal_stations
+        node_names = self.ISO.node_names
+
+        flow_map = self.ISO.node_flow_map
+        flow_dir = self.ISO.node_flow_direction
+
+        energy_offer = self.energy_offers
+        branch_flow = self.branch_flow
+
+        for node in node_names:
+            n1 = '_'.join([node, 'Energy_Price'])
+            n2 = '_'.join([node, 'Nodal_Transmission'])
+
+            # Net Injections from Energy and Demand
+            self.addC(node_inj[node] == SUM([energy_offer[i] for i in nodal_stations[node]]) - nodal_demand[node], n1)
+
+            # Net Injection from transmission
+            self.addC(node_inj[node] == SUM([branch_flow[t] * flow_dir[t] for t in flow_map[node]]),n2)
 
     def _obj_function(self):
         """ Apply the objective function """
