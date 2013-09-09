@@ -136,3 +136,14 @@ def test_operator_il_parameters():
     operator.reserve_IL_names[0] == 'P55_il'
     operator.reserve_IL_price['P55_il'] == 100
     operator.reserve_IL_capacity['P55_il'] == 200
+
+@setup_function
+def test_operator_node_parameters():
+
+    station = Station('station', operator, node, company, capacity=300)
+
+    operator._node_parameters()
+    operator.node_names[0] == 'P55_node'
+    operator.nodal_demand['P55_node'] == 154
+
+    operator.nodal_stations['P55_node'][0] == 'P55_station'
