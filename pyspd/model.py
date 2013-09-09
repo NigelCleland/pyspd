@@ -185,7 +185,7 @@ class SPDModel(object):
         eoffers = self.energy_offers
 
         for i in rzones:
-            for j in rzone_stations[i]
+            for j in rzone_stations[i]:
                 name = '_'.join([i, j, 'Generator_Risk'])
                 self.addC(rzone_risk[i] >= eoffers[j], name)
 
@@ -200,7 +200,7 @@ class SPDModel(object):
         bflow_map = self.ISO.reserve_zone_flow_map
 
         for i in rzones:
-            for j in bflow_map[i]
+            for j in bflow_map[i]:
                 name = '_'.join([i,j, "Transmission_Risk"])
                 self.addC(rzone_risk[i] >= bflow[j] * bflow_dir[j], name)
 
