@@ -320,8 +320,29 @@ class Station(object):
 
 
 class InterruptibleLoad(object):
-    """docstring for InterruptibleLoad"""
+    """InterruptibleLoad
+
+    Container for an Interruptible Load participant within the market.
+    This participant acts as a non-generator source of reserve for
+    supporting a higher level of risk in the market.
+
+    Currently set up by passing a unique name to the object.
+
+    Parameters
+    ----------
+    name: str
+        The unique name to be applied to the Interruptible Load object
+    SO: SystemOperator
+        The System Operator object
+    Node: Node
+        The location of the source of interruptible load
+    Company: Company
+        Who controls the Interruptible Load object, used when determining
+        profits or losses
+
+    """
     def __init__(self, name, SO, Node, Company):
+        """ Initialise the interruptible load object"""
         super(InterruptibleLoad, self).__init__()
         self.name = name
         self.node = Node
@@ -334,6 +355,16 @@ class InterruptibleLoad(object):
 
 
     def add_reserve_offer(self, price, offer):
+        """ Add a Reserve Offer to the object consisting of a price and offer
+
+        Parameters
+        ----------
+        price: int, float
+            The price of the offer
+        offer: int, float
+            The quantity of the offer
+
+        """
 
         self.reserve_price = price
         self.reserve_offer = offer
