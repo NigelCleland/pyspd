@@ -9,28 +9,54 @@ class SystemOperator(object):
     """System Operator class takes all of the """
     def __init__(self):
         super(SystemOperator, self).__init__()
+        self._create_empty_variables()
 
+    def _create_empty_variables(self):
         self.stations = []
+        self.station_names = []
+        self.station_map = {}
+
         self.nodes = []
+        self.node_names = []
+        self.node_map = {}
+
         self.reserve_zones = []
+        self.reserve_zone_names = []
+        self.reserve_zone_map = {}
+
         self.interruptible_loads = []
+        self.interruptible_load_names = []
+        self.interruptible_load_map = {}
+
         self.branches = []
+        self.branch_names = []
+        self.branch_map = {}
 
     def _add_station(self, Station):
         """ Add a Station """
         self.stations.append(Station)
+        self.station_names.append(Station)
+        self.station_map[Station.name] = Station
 
     def _add_node(self, Node):
         self.nodes.append(Node)
+        self.node_names.append(Node.name)
+        self.node_map[Node.name] = Node
 
     def _add_reserve_zone(self, RZ):
         self.reserve_zones.append(RZ)
+        self.reserve_zone_names.append(RZ.name)
+        self.reserve_zone_map[RZ.name] = RZ
 
     def _add_interruptible_load(self, IL):
         self.interruptible_loads.append(IL)
+        self.interruptible_load_names.append(IL.name)
+        self.interruptible_load_map[IL.name] = IL
 
     def _add_branch(self, Branch):
         self.branches.append(Branch)
+        self.branch_names.append(Branch.name)
+        self.branch_map[Branch.name] = Branch
 
 # Define an Operator Class each time this is run!
 # This is a little bit of magic to make sure the decorators work
