@@ -67,6 +67,8 @@ class SystemOperator(object):
             self.reserve_station_price[name] = station.reserve_price
             self.reserve_station_proportion[name] = station.reserve_proportion
 
+            self.reserve_spinning_stations.append(name)
+
 
 
     def _interruptible_load_parameters(self, itname):
@@ -165,6 +167,7 @@ class SystemOperator(object):
         self.reserve_zone_transmission = defaultdict(list)
         self.reserve_zone_flow_map = defaultdict(list)
         self.reserve_zone_flow_direction = defaultdict(dict)
+        self.reserve_spinning_stations = []
 
         self.interruptible_loads = []
         self.interruptible_load_names = []

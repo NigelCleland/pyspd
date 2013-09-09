@@ -30,15 +30,11 @@ class SPDModel(object):
         return self
 
     def create_lp(self):
-
-        # Create the objective function
-
-        # Iterate over the difference instances:
-
         self.setup_lp()
         self._create_variables()
         self._obj_function()
         self._nodal_demand()
+        self._energy_offers()
 
     def _create_variables(self):
         """ Create all of the variables necessary to solve the Linear Program
@@ -118,20 +114,38 @@ class SPDModel(object):
         # Unpack variables
         eoffers = self.energy_offers
         enames = self.ISO.energy_station_names
-        ecapacity = self.energy_station_capacity
+        ecapacity = self.ISO.energy_station_capacity
 
         for i in enames:
-            name = '_'.join([i, 'Band_Energy'])
+            name = '_'.join([i, 'Total_Energy'])
             self.addC(eoffers[i] <= ecapacity[i], name)
 
+
     def _reserve_offers(self):
-        pass
+        # Unpack variables
+        roffers = self.reserve_offers
+        rnames = self.ISO.reserve_station_names
+        rcapacity = self.ISO.reserve_station_capacity
+
+        for i in rnames:
+            name = '_'.join([i, "Total_Reserve"])
+            self.addC(roffers[i] <= rcapacity[i], name)
 
     def _transmission_offer(self):
         pass
 
     def _reserve_proportion(self):
-        pass
+
+        # Unpack Variables
+
+        spin_stations = self.ISO.reserve_spinning_stations
+        roffers = self.reserve_offers
+        eoffers = self.energy_offers
+        rprop = self.ISO.reserve_station_proportion
+
+        for i in spin_stations:
+            name = '_'.join([i, 'Reserve_Proportion'])
+            self.addC(roffers[i] <= rprop[i] * eoffers[i], name)
 
     def _reserve_combined(self):
         pass
