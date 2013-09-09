@@ -11,17 +11,17 @@ class SystemOperator(object):
         self.reserve_zones = []
         self.interruptible_loads = []
 
-    def add_station(self, Station):
+    def _add_station(self, Station):
         """ Add a Station """
         self.stations.append(Station)
 
-    def add_node(self, Node):
+    def _add_node(self, Node):
         self.nodes.append(Node)
 
-    def add_reserve_zone(self, RZ):
+    def _add_reserve_zone(self, RZ):
         self.reserve_zones.append(RZ)
 
-    def add_interruptible_load(self, IL):
+    def _add_interruptible_load(self, IL):
         self.interruptible_loads.append(IL)
 
 # Define an Operator Class each time this is run!
@@ -31,22 +31,22 @@ operator = SystemOperator()
 
 def addStation(cls):
     def wrapped(cls, *args, **kargs):
-        operator.add_station(cls)
+        operator._add_station(cls)
     return wrapped
 
 def addNode(cls):
     def wrapped(cls, *args, **kargs):
-        operator.add_node(cls)
+        operator._add_node(cls)
     return wrapped
 
 def addRZ(cls):
     def wrapped(cls, *args, **kargs):
-        operator.add_reserve_zone(cls)
+        operator._add_reserve_zone(cls)
     return wrapped
 
 def addIL(cls):
     def wrapped(cls, *args, **kargs):
-        operator.add_interruptible_load(cls)
+        operator._add_interruptible_load(cls)
     return wrapped
 
 
