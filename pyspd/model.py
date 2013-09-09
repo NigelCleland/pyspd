@@ -205,7 +205,17 @@ class SPDModel(object):
                 self.addC(rzone_risk[i] >= bflow[j] * bflow_dir[j], name)
 
     def _reserve_dispatch(self):
-        pass
+
+        rzones = self.ISO.reserve_zone_names
+        rzone_risk = self.reserve_zone_risk
+
+        rzone_stations = self.ISO.reserve_zone_reserve
+        roffer = self.reserve_offers
+
+        for i in rzones:
+            name = '_'.join([i, 'Reserve_Price'])
+            self.addC(self.SUM([roffer[j] for j in rzone_stations[i]]) - rzone_risk[i] >= 0, name)
+
 
     def write_lp(self, fName=None):
         self.lp.writeLP(fName)
