@@ -18,7 +18,7 @@ class SystemOperator(object):
         self._create_empty_variables()
 
 
-    def create_iterator(self, actor=None, prices=None, quantities=None):
+    def create_iterator(self, actor=None, variable='reserve_price', varrange=np.arange(0,5)):
         """ Take the actor and update all of the variable names
 
         """
@@ -26,26 +26,17 @@ class SystemOperator(object):
         self.itinstances = []
         self.itdispatches = {}
 
-        if isinstance(prices, np.ndarray):
-            for price in prices:
-                itname = ''.join(["Price", str(price)])
-                self.itinstances.apend(itname)
-
-                actor.reserve_price = price
-                self.add_dispatch(itname)
-
-        elif isinstance(quantities, np.ndarray):
-            for quantity in quantities:
-                itname = ''.join(["Quantity", str(quantity)])
-                self.itinstances.apend(itname)
-
-                actor.set_offer_quantity(quantity)
+        if variable:
+            for value in varrange:
+                itname = ''.join([variable, str(value)])
+                self.itinstances.append(itname)
+                actor.__dict__[variable] = value
                 self.add_dispatch(itname)
 
         else:
             # Do a single dispatch
             itname="Single"
-            self.itinstances.apend(itname)
+            self.itinstances.append(itname)
 
             self.add_dispatch(itname)
 
@@ -56,7 +47,13 @@ class SystemOperator(object):
     def add_dispatch(self, itname):
         """ Get the dispatch, apply the iterator name to each one
         """
-        pass
+
+        self._station_parameters(itname)
+        self._interruptible_load_parameters(itname)
+        self._node_parameters(itname)
+        self._transmission_parameters(itname)
+        self._rezerve_zone_parameters(itname)
+
 
     def _station_parameters(self, itname):
         for station in self.stations:
@@ -68,7 +65,10 @@ class SystemOperator(object):
             self.reserve_station_names.append(name)
             self.reserve_station_capacity[name] = station.reserve_offer
             self.reserve_station_price[name] = station.reserve_price
-            self.reserve_station_proportion[name] = station.proportion
+            self.reserve_station_proportion[name] = station.reserve_proportion
+
+            self.reserve_spinning_stations.append(name)
+            self.total_station_capacity[name] = station.capacity
 
 
 
@@ -78,6 +78,10 @@ class SystemOperator(object):
             self.reserve_IL_names.append(name)
             self.reserve_IL_capacity[name] = IL.reserve_offer
             self.reserve_IL_price[name] = IL.reserve_price
+
+            self.reserve_station_names.append(name)
+            self.reserve_station_price[name] = IL.reserve_price
+            self.reserve_station_capacity[name] = IL.reserve_offer
 
 
     def _node_parameters(self, itname):
@@ -103,6 +107,8 @@ class SystemOperator(object):
             self.node_flow_map[sn_name].append(name)
             self.node_flow_map[rn_name].append(name)
 
+            self.branch_capacity[name] = branch.capacity
+
             self.node_flow_direction[sn_name][name] = 1
             self.node_flow_direction[rn_name][name] = -1
 
@@ -110,11 +116,13 @@ class SystemOperator(object):
                 sn_rz_name = '_'.join([itname, branch.sending_node.RZ.name])
                 rn_rz_name = '_'.join([itname, branch.receiving_node.RZ.name])
 
-                self.reserve_zone_flow_map[sn_rz_name].append(name)
-                self.reserve_zone_flow_map[rn_rz_name].append(name)
+                if sn_rz_name != rn_rz_name:
 
-                self.reserve_zone_flow_direction[sn_rz_name][name] = 1
-                self.reserve_zone_flow_direction[rn_rz_name][name] = -1
+                    self.reserve_zone_flow_map[sn_rz_name].append(name)
+                    self.reserve_zone_flow_map[rn_rz_name].append(name)
+
+                    self.reserve_zone_flow_direction[sn_rz_name][name] = 1
+                    self.reserve_zone_flow_direction[rn_rz_name][name] = -1
 
 
     def _rezerve_zone_parameters(self, itname):
@@ -146,6 +154,7 @@ class SystemOperator(object):
         self.reserve_station_price = {}
         self.reserve_station_proportion = {}
         self.reserve_station_capacity = {}
+        self.total_station_capacity = {}
 
         self.nodes = []
         self.node_names = []
@@ -162,6 +171,7 @@ class SystemOperator(object):
         self.reserve_zone_transmission = defaultdict(list)
         self.reserve_zone_flow_map = defaultdict(list)
         self.reserve_zone_flow_direction = defaultdict(dict)
+        self.reserve_spinning_stations = []
 
         self.interruptible_loads = []
         self.interruptible_load_names = []
@@ -174,6 +184,7 @@ class SystemOperator(object):
         self.branches = []
         self.branch_names = []
         self.branch_map = {}
+        self.branch_capacity = {}
         return self
 
     def _add_station(self, Station):
@@ -345,6 +356,28 @@ class Branch(object):
         self.name = '_'.join([sending_node.name, receiving_node.name])
 
         self.risk = risk
+
+
+
+def test_options():
+
+    operator = SystemOperator()
+    RZ = ReserveZone('RZ', operator)
+    company = Company('company')
+    node = Node("node", operator, RZ, demand=154)
+
+    station = Station('station', operator, node, company, capacity=300)
+    il = InterruptibleLoad('il', operator, node, company)
+
+    station.add_reserve_offer(50,300, 0.5)
+    station.add_energy_offer(25, 250)
+
+    il.add_reserve_offer(75, 50)
+
+    operator.create_iterator(station)
+
+    return (operator, RZ, company, node, station, il)
+
 
 
 

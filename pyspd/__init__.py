@@ -6,3 +6,4 @@ __email__ = 'nigel.cleland@gmail.com'
 __version__ = '0.1.0'
 
 from actors import *
+from model import *
