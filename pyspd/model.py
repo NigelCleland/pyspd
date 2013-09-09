@@ -96,6 +96,7 @@ class SPDModel(object):
             # Net Injection from transmission
             self.addC(node_inj[node] == SUM([branch_flow[t] * flow_dir[t] for t in flow_map[node]]),n2)
 
+
     def _obj_function(self):
         """ Apply the objective function """
 
@@ -113,7 +114,15 @@ class SPDModel(object):
                 self.SUM([roffers[j] * rprices[j] for j in rnames]))
 
     def _energy_offers(self):
-        pass
+        """ Constrain the Energy offers """
+        # Unpack variables
+        eoffers = self.energy_offers
+        enames = self.ISO.energy_station_names
+        ecapacity = self.energy_station_capacity
+
+        for i in enames:
+            name = '_'.join([i, 'Band_Energy'])
+            self.addC(eoffers[i] <= ecapacity[i], name)
 
     def _reserve_offers(self):
         pass
