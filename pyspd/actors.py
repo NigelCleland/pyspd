@@ -359,29 +359,6 @@ class Branch(object):
 
 
 
-def test_options():
-
-    operator = SystemOperator()
-    RZ = ReserveZone('RZ', operator)
-    company = Company('company')
-    node = Node("node", operator, RZ, demand=154)
-
-    station = Station('station', operator, node, company, capacity=400)
-    il = InterruptibleLoad('il', operator, node, company)
-
-    station.add_reserve_offer(50,300, 1.0)
-    station.add_energy_offer(25, 250)
-
-    il.add_reserve_offer(75, 150)
-
-    operator.create_iterator(station, 'energy_price', np.arange(10,200,10))
-
-    return (operator, RZ, company, node, station, il)
-
-
-
-
-
 if __name__ == '__main__':
     pass
 
