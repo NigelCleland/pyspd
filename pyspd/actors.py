@@ -26,7 +26,7 @@ class SystemOperator(object):
         self.itinstances = []
         self.itdispatches = {}
 
-        if variable:
+        if actor:
             for value in varrange:
                 itname = ''.join([variable, str(value)])
                 self.itinstances.append(itname)
