@@ -22,15 +22,20 @@ class SystemOperator(object):
 
         """
 
+        self.itinstances = []
+
         if isinstance(prices, np.ndarray):
             for price in prices:
                 itname = ''.join(["Price", str(price)])
+                self.itinstances.apend(itname)
 
                 actor.add_offer_price(price)
+                self.add_dispatch(itname)
 
         elif isinstance(quantities, np.ndarray):
             for quantity in quantities:
                 itname = ''.join(["Quantity", str(quantity)])
+                self.itinstances.apend(itname)
 
                 actor.set_offer_quantity(quantity)
                 self.add_dispatch(itname)
@@ -38,6 +43,7 @@ class SystemOperator(object):
         else:
             # Do a single dispatch
             itname="Single"
+            self.itinstances.apend(itname)
 
             self.add_dispatch(itname)
 

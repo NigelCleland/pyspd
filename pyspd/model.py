@@ -11,9 +11,10 @@ import pulp
 
 class SPDModel(object):
     """docstring for SPDModel"""
-    def __init__(self):
+    def __init__(self, ISO):
         super(SPDModel, self).__init__()
 
+        self.ISO = ISO
 
     def setup_lp(self):
         """ Setup a Linear Program from a defined ISO instance """
@@ -27,6 +28,17 @@ class SPDModel(object):
         self.lpDict = pulp.LpVariable.dicts
 
         return self
+
+    def create_lp(self):
+
+        # Create the objective function
+
+        # Iterate over the difference instances:
+
+        for itname in self.ISO.itinstances:
+
+            # Apply the Constraints for each instance
+            pass
 
 
 
