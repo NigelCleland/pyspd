@@ -341,7 +341,30 @@ class InterruptibleLoad(object):
 
 
 class Branch(object):
-    """docstring for Branch"""
+    """Branch
+
+    A Branch is a connection point between any two nodes and specifies
+    the capacity between the nodes.
+    A branch may be a risk setting object, if the risk flag is set to True
+    If this is the case then the current implementation of the model requires
+    the sending and receiving node to be in different Reserve Zones.
+
+    To initiate a Branch object a minimum of three items must be passed.
+
+    Parameters
+    ----------
+    SO: SystemOperator
+        The System Operator object for the current solution run
+    sending_node: Node
+        The node which is specified as the sending node for the model dispatch
+    receiving_node: Node
+        The receiving node for the model dispatch
+    capacity: int, float, default 0
+        The capacity of the branch
+    risk: bool, default False
+        Flag to treat the branch as a risk setting object.
+
+    """
     def __init__(self, SO, sending_node, receiving_node, capacity=0, risk=False):
         super(Branch, self).__init__()
 
