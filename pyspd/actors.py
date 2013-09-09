@@ -5,6 +5,7 @@
 
 # C Imports
 import numpy as np
+from collections import defaultdict
 
 # ----------------------------------------------------------------------------
 # SYSTEM OPERATOR
@@ -136,17 +137,37 @@ class SystemOperator(object):
         self.station_names = []
         self.station_map = {}
 
+        self.energy_station_names = []
+        self.reserve_station_names = []
+        self.energy_station_price = {}
+        self.energy_station_capacity = {}
+        self.reserve_station_price = {}
+        self.reserve_station_proportion = {}
+        self.reserve_station_capacity = {}
+
         self.nodes = []
         self.node_names = []
         self.node_map = {}
+        self.node_flow_direction = defaultdict(dict)
+        self.node_flow_map = defaultdict(list)
+        self.nodal_stations = defaultdict(list)
+        self.nodal_demand = {}
 
         self.reserve_zones = []
         self.reserve_zone_names = []
-        self.reserve_zone_map = {}
+        self.reserve_zone_generators = defaultdict(list)
+        self.reserve_zone_reserve = defaultdict(list)
+        self.reserve_zone_transmission = defaultdict(list)
+        self.reserve_zone_flow_map = defaultdict(list)
+        self.reserve_zone_flow_direction = defaultdict(dict)
 
         self.interruptible_loads = []
         self.interruptible_load_names = []
         self.interruptible_load_map = {}
+
+        self.reserve_IL_names =
+        self.reserve_IL_capacity = {}
+        self.reserve_IL_price = {}
 
         self.branches = []
         self.branch_names = []
