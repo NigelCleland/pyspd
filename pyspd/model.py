@@ -148,7 +148,14 @@ class SPDModel(object):
             self.addC(roffers[i] <= rprop[i] * eoffers[i], name)
 
     def _reserve_combined(self):
-        pass
+        spin_stations = self.ISO.reserve_spinning_stations
+        roffers = self.reserve_offers
+        eoffers = self.energy_offers
+        tot_capacity = self.ISO.total_station_capacity
+
+        for i in spin_stations:
+            name = '_'.join([i, 'Total_Capacity'])
+            self.addC(roffers[i] + eoffers[i] <= tot_capacity[i], name)
 
     def _generator_risk(self):
         pass

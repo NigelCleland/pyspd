@@ -68,6 +68,7 @@ class SystemOperator(object):
             self.reserve_station_proportion[name] = station.reserve_proportion
 
             self.reserve_spinning_stations.append(name)
+            self.total_station_capacity[name] = station.capacity
 
 
 
@@ -151,6 +152,7 @@ class SystemOperator(object):
         self.reserve_station_price = {}
         self.reserve_station_proportion = {}
         self.reserve_station_capacity = {}
+        self.total_station_capacity = {}
 
         self.nodes = []
         self.node_names = []
