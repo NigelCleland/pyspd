@@ -158,7 +158,17 @@ class SPDModel(object):
             self.addC(roffers[i] + eoffers[i] <= tot_capacity[i], name)
 
     def _generator_risk(self):
-        pass
+
+        rzones = self.ISO.reserve_zone_names
+        rzone_risk = self.reserve_zone_risk
+
+        rzone_stations = self.ISO.reserve_zone_generators
+        eoffers = self.energy_offers
+
+        for i in rzones:
+            for j in rzone_stations[i]
+                name = '_'.join([i, j, 'Generator_Risk'])
+                self.addC(rzone_risk[i] >= eoffers[j], name)
 
     def _transmission_risk(self):
         pass
