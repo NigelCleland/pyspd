@@ -222,7 +222,7 @@ class SPDModel(object):
 
     def solve_lp(self):
         begin = time.time()
-        self.lp.solve(pulp.COIN_CMD())
+        self.lp.solve()
         self.solution_time = time.time() - begin
 
     def parse_result(self):
