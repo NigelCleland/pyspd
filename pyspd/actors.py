@@ -26,17 +26,17 @@ class SystemOperator(object):
         self.itinstances = []
         self.itdispatches = {}
 
-        if variable
+        if variable:
             for value in varrange:
                 itname = ''.join([variable, str(value)])
-                self.itinstances.apend(itname)
+                self.itinstances.append(itname)
                 actor.__dict__[variable] = value
                 self.add_dispatch(itname)
 
         else:
             # Do a single dispatch
             itname="Single"
-            self.itinstances.apend(itname)
+            self.itinstances.append(itname)
 
             self.add_dispatch(itname)
 
@@ -47,7 +47,13 @@ class SystemOperator(object):
     def add_dispatch(self, itname):
         """ Get the dispatch, apply the iterator name to each one
         """
-        pass
+
+        self._station_parameters(itname)
+        self._interruptible_load_parameters(itname)
+        self._node_parameters(itname)
+        self._transmission_parameters(itname)
+        self._rezerve_zone_parameters(itname)
+
 
     def _station_parameters(self, itname):
         for station in self.stations:
