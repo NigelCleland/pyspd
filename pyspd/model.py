@@ -170,8 +170,20 @@ class SPDModel(object):
                 name = '_'.join([i, j, 'Generator_Risk'])
                 self.addC(rzone_risk[i] >= eoffers[j], name)
 
+
     def _transmission_risk(self):
-        pass
+
+        rzones = self.ISO.reserve_zone_names
+        rzone_risk = self.reserve_zone_risk
+
+        bflow = self.branch_flow
+        bflow_dir = self.ISO.reserve_zone_flow_direction
+        bflow_map = self.ISO.reserve_zone_flow_map
+
+        for i in rzones:
+            for j in bflow_map[i]
+                name = '_'.join([i,j, "Transmission_Risk"])
+                self.addC(rzone_risk[i] >= bflow[j] * bflow_dir[j], name)
 
     def _reserve_dispatch(self):
         pass
