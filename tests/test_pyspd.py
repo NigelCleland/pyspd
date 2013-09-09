@@ -102,3 +102,23 @@ def test_branch_creation():
     assert branch.receiving_node == node2
 
     assert operator.branches[0] == branch
+
+
+def test_station_offer():
+
+    operator = SystemOperator()
+    company = Company("company")
+    RZ = ReserveZone("RZ", operator)
+    node = Node("node", operator, RZ, demand=154)
+
+    station = Station('station', operator, node, company, capacity=300)
+
+    station.add_energy_offer(50, 100)
+
+    station.add_reserve_offer(25, 300, 0.3)
+
+    assert station.energy_price == 50
+    assert station.energy_offer == 100
+    assert station.reserve_price == 25
+    assert station.reserve_offer == 300
+    assert station.reserve_proportion == 0.3
