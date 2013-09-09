@@ -23,6 +23,7 @@ class SystemOperator(object):
         """
 
         self.itinstances = []
+        self.itdispatches = {}
 
         if isinstance(prices, np.ndarray):
             for price in prices:
@@ -47,11 +48,15 @@ class SystemOperator(object):
 
             self.add_dispatch(itname)
 
+        return self
+
 
 
     def add_dispatch(self, itname):
         """ Get the dispatch, apply the iterator name to each one
         """
+
+        self.itdispatches[itname]
 
 
 
@@ -75,32 +80,38 @@ class SystemOperator(object):
         self.branches = []
         self.branch_names = []
         self.branch_map = {}
+        return self
 
     def _add_station(self, Station):
         """ Add a Station """
         self.stations.append(Station)
         self.station_names.append(Station)
         self.station_map[Station.name] = Station
+        return self
 
     def _add_node(self, Node):
         self.nodes.append(Node)
         self.node_names.append(Node.name)
         self.node_map[Node.name] = Node
+        return self
 
     def _add_reserve_zone(self, RZ):
         self.reserve_zones.append(RZ)
         self.reserve_zone_names.append(RZ.name)
         self.reserve_zone_map[RZ.name] = RZ
+        return self
 
     def _add_interruptible_load(self, IL):
         self.interruptible_loads.append(IL)
         self.interruptible_load_names.append(IL.name)
         self.interruptible_load_map[IL.name] = IL
+        return self
 
     def _add_branch(self, Branch):
         self.branches.append(Branch)
         self.branch_names.append(Branch.name)
         self.branch_map[Branch.name] = Branch
+        return self
 
 # ----------------------------------------------------------------------------
 # PARTICIPANT CLASSES
@@ -115,12 +126,16 @@ class Company(object):
 
         self.stations = []
         self.interruptible_loads = []
+        return self
 
     def _add_station(self, Station):
         self.stations.append(Station)
+        return self
 
     def _add_intload(self, IL):
         self.interruptible_loads.append(IL)
+        return self
+
 
 class Node(object):
     """docstring for Node"""
@@ -134,15 +149,18 @@ class Node(object):
 
         RZ._add_node(self)
         self.RZ = RZ
+        return self
 
 
     def _add_station(self, Station):
         self.stations.append(Station)
         self.RZ._add_station(Station)
+        return self
 
     def _add_intload(self, IL):
         self.intload.append(IL)
         self.RZ._add_intload(IL)
+        return self
 
 
 class ReserveZone(object):
@@ -154,29 +172,46 @@ class ReserveZone(object):
 
         self.stations = []
         self.interruptible_loads = []
+        return self
 
 
     def _add_node(self, Node):
         self.nodes.append(Node)
+        return self
 
     def _add_station(self, Station):
         self.stations.append(Station)
+        return self
 
     def _add_intload(self, IL):
         self.interruptible_loads.append(IL)
-
+        return self
 
 class Station(object):
     """docstring for Station"""
-    def __init__(self, name, Node, Company):
+    def __init__(self, name, Node, Company, capacity=0):
         super(Station, self).__init__()
         self.name = name
         self.node = Node
         self.company = Company
+        self.capacity = capacity
 
         Node._add_station(self)
         Company._add_station(self)
+        return self
 
+
+    def add_energy_offer(self, price, offer):
+        self.energy_price = price
+        self.energy_offer = offer
+        return self
+
+    def add_reserve_offer(self, price, offer, proportion):
+
+        self.reserve_price = price
+        self.reserve_offer = offer
+        self.reserve_proportion = proportion
+        return self
 
 class InterruptibleLoad(object):
     """docstring for InterruptibleLoad"""
@@ -188,19 +223,27 @@ class InterruptibleLoad(object):
 
         Node._add_intload(self)
         Company._add_intload(self)
+        return self
 
+
+    def add_reserve_offer(self, price, offer):
+
+        self.reserve_price = price
+        self.reserve_offer = offer
+        return self
 
 class Branch(object):
     """docstring for Branch"""
-    def __init__(self, sending_node, receiving_node):
+    def __init__(self, sending_node, receiving_node, capacity=0):
         super(Branch, self).__init__()
 
         # Add the nodes
         self.sending_node = sending_node
         self.receiving_node = receiving_node
 
+        self.capacity = capacity
         # Add the branch to each node
-
+        return self
 
 
 
