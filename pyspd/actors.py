@@ -56,8 +56,42 @@ class SystemOperator(object):
         """ Get the dispatch, apply the iterator name to each one
         """
 
+        # Energy Stations
         for station in self.stations:
+            name = ' '.join([itname, station.name])
+            self.energy_station_names.append(name)
+            self.energy_station_capacity[name] = station.energy_offer
+            self.energy_station_price[name] = station.energy_price
+
+        # Reserve Stations
+        for station in self.stations:
+            name = ' '.join([itname, station.name])
+            self.reserve_station_names.append(name)
+            self.reserve_station_capacity[name] = station.reserve_offer
+            self.reserve_station_price[name] = station.reserve_price
+            self.reserve_station_proportion[name] = station.proportion
+
+        # Interruptible Load
+        for IL in self.interruptible_loads:
+            name = ' '.join([itname, IL.name])
+            self.reserve_IL_names.append(name)
+            self.reserve_IL_capacity[name] = IL.reserve_offer
+            self.reserve_IL_price[name] = IL.reserve_price
+
+        # Nodal Demand
+        for node in self.nodes:
+            name = ' '.join([itname, node.name])
+            self.node_names.append(name)
+            self.nodal_demand[name] = node.demand
+
+        # Transmisison Branches
+        for branch in self.branches:
             pass
+
+        # Reserve Zones
+        for rz in self.reserve_zones:
+            pass
+
 
 
     def _create_empty_variables(self):
@@ -85,32 +119,22 @@ class SystemOperator(object):
     def _add_station(self, Station):
         """ Add a Station """
         self.stations.append(Station)
-        self.station_names.append(Station)
-        self.station_map[Station.name] = Station
         return self
 
     def _add_node(self, Node):
         self.nodes.append(Node)
-        self.node_names.append(Node.name)
-        self.node_map[Node.name] = Node
         return self
 
     def _add_reserve_zone(self, RZ):
         self.reserve_zones.append(RZ)
-        self.reserve_zone_names.append(RZ.name)
-        self.reserve_zone_map[RZ.name] = RZ
         return self
 
     def _add_interruptible_load(self, IL):
         self.interruptible_loads.append(IL)
-        self.interruptible_load_names.append(IL.name)
-        self.interruptible_load_map[IL.name] = IL
         return self
 
     def _add_branch(self, Branch):
         self.branches.append(Branch)
-        self.branch_names.append(Branch.name)
-        self.branch_map[Branch.name] = Branch
         return self
 
 # ----------------------------------------------------------------------------

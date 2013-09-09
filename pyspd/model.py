@@ -44,9 +44,6 @@ class SPDModel(object):
 
         Returns:
         --------
-        energy_band_offers:
-        reserve_band_offers
-        transmission_band_offers
         energy_total_offers
         reserve_total_offers
         transmission_total_offers
@@ -55,23 +52,14 @@ class SPDModel(object):
         """
 
 
-        self.energy_band_offers = self.lpDict("Energy_Band",
-                        self.ISO.energy_band_offers, 0)
+        self.energy_offers = self.lpDict("Energy_Total",
+                        self.ISO.energy_offers, 0)
 
-        self.reserve_band_offers = self.lpDict("Reserve_Band",
-                        self.ISO.reserve_band_offers, 0)
+        self.reserve_offers = self.lpDict("Reserve_Total",
+                        self.ISO.reserve_offers, 0)
 
-        self.transmission_band_offers = self.lpDict("Transmission_Band",
-                        self.ISO.transmission_band_offers)
-
-        self.energy_total_offers = self.lpDict("Energy_Total",
-                        self.ISO.energy_total_offers, 0)
-
-        self.reserve_total_offers = self.lpDict("Reserve_Total",
-                        self.ISO.reserve_total_offers, 0)
-
-        self.transmission_total_offers = self.lpDict("Transmission_Total",
-                        self.ISO.transmission_total_offers)
+        self.transmission_offers = self.lpDict("Transmission_Total",
+                        self.ISO.transmission_offers)
 
         self.nodal_injection = self.lpDict("Nodal_Injection",
                         self.ISO.nodal_injection)
@@ -88,22 +76,13 @@ class SPDModel(object):
         """ Apply the objective function """
         pass
 
-    def _energy_band_offers(self):
+    def _energy_offers(self):
         pass
 
-    def _reserve_band_offers(self):
+    def _reserve_offers(self):
         pass
 
-    def _transmission_band_capacity(self):
-        pass
-
-    def _energy_total_offers(self):
-        pass
-
-    def _reserve_total_offers(self):
-        pass
-
-    def _transmission_total_offer(self):
+    def _transmission_offer(self):
         pass
 
     def _reserve_proportion(self):
