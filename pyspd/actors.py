@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Standard Library Imports
+
+# C Imports
+import numpy as np
+
 # ----------------------------------------------------------------------------
 # SYSTEM OPERATOR
 # ----------------------------------------------------------------------------
@@ -10,6 +15,39 @@ class SystemOperator(object):
     def __init__(self):
         super(SystemOperator, self).__init__()
         self._create_empty_variables()
+
+
+    def create_iterator(self, actor=None, prices=None, quantities=None):
+        """ Take the actor and update all of the variable names
+
+        """
+
+        if isinstance(prices, np.ndarray):
+            for price in prices:
+                itname = ''.join(["Price", str(price)])
+
+                actor.add_offer_price(price)
+
+        elif isinstance(quantities, np.ndarray):
+            for quantity in quantities:
+                itname = ''.join(["Quantity", str(quantity)])
+
+                actor.set_offer_quantity(quantity)
+                self.add_dispatch(itname)
+
+        else:
+            # Do a single dispatch
+            itname="Single"
+
+            self.add_dispatch(itname)
+
+
+
+    def add_dispatch(self, itname):
+        """ Get the dispatch, apply the iterator name to each one
+        """
+
+
 
     def _create_empty_variables(self):
         self.stations = []
@@ -58,42 +96,6 @@ class SystemOperator(object):
         self.branch_names.append(Branch.name)
         self.branch_map[Branch.name] = Branch
 
-# Define an Operator Class each time this is run!
-# This is a little bit of magic to make sure the decorators work
-# Automatically creates the operator class for the user
-# Do not change the ordering here!
-operator = SystemOperator()
-
-# ----------------------------------------------------------------------------
-# DECORATORS
-# ----------------------------------------------------------------------------
-
-def addStation(cls):
-    def wrapped(cls, *args, **kargs):
-        operator._add_station(cls)
-    return wrapped
-
-def addNode(cls):
-    def wrapped(cls, *args, **kargs):
-        operator._add_node(cls)
-    return wrapped
-
-def addRZ(cls):
-    def wrapped(cls, *args, **kargs):
-        operator._add_reserve_zone(cls)
-    return wrapped
-
-def addIL(cls):
-    def wrapped(cls, *args, **kargs):
-        operator._add_interruptible_load(cls)
-    return wrapped
-
-def addBranch(cls):
-    def wrapped(cls, *args, **kargs):
-        operator.add_branch(cls)
-    return wrapped
-
-
 # ----------------------------------------------------------------------------
 # PARTICIPANT CLASSES
 # ----------------------------------------------------------------------------
@@ -105,10 +107,17 @@ class Company(object):
         super(Company, self).__init__()
         self.name = name
 
+        self.stations = []
+        self.interruptible_loads = []
+
+    def _add_station(self, Station):
+        self.stations.append(Station)
+
+    def _add_intload(self, IL):
+        self.interruptible_loads.append(IL)
 
 class Node(object):
     """docstring for Node"""
-    @addNode
     def __init__(self, name, RZ, demand=0):
         super(Node, self).__init__()
         self.name = name
@@ -118,50 +127,74 @@ class Node(object):
         self.intload = []
 
         RZ._add_node(self)
+        self.RZ = RZ
+
 
     def _add_station(self, Station):
         self.stations.append(Station)
+        self.RZ._add_station(Station)
 
     def _add_intload(self, IL):
         self.intload.append(IL)
+        self.RZ._add_intload(IL)
 
 
 class ReserveZone(object):
     """docstring for ReserveZone"""
-    @addRZ
     def __init__(self, name):
         super(ReserveZone, self).__init__()
         self.name = name
         self.nodes = []
 
+        self.stations = []
+        self.interruptible_loads = []
+
 
     def _add_node(self, Node):
         self.nodes.append(Node)
 
+    def _add_station(self, Station):
+        self.stations.append(Station)
+
+    def _add_intload(self, IL):
+        self.interruptible_loads.append(IL)
+
 
 class Station(object):
     """docstring for Station"""
-
-    @addStation
-    def __init__(self, name, Node):
+    def __init__(self, name, Node, Company):
         super(Station, self).__init__()
         self.name = name
+        self.node = Node
+        self.company = Company
 
         Node._add_station(self)
+        Company._add_station(self)
 
 
 class InterruptibleLoad(object):
     """docstring for InterruptibleLoad"""
-    @addIL
-    def __init__(self, name):
+    def __init__(self, name, Node, Company):
         super(InterruptibleLoad, self).__init__()
         self.name = name
+        self.node = Node
+        self.company = Company
+
+        Node._add_intload(self)
+        Company._add_intload(self)
+
 
 class Branch(object):
     """docstring for Branch"""
-    @addBranch
     def __init__(self, sending_node, receiving_node):
         super(Branch, self).__init__()
+
+        # Add the nodes
+        self.sending_node = sending_node
+        self.receiving_node = receiving_node
+
+        # Add the branch to each node
+
 
 
 

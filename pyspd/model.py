@@ -11,9 +11,9 @@ import pulp
 
 class SPDModel(object):
     """docstring for SPDModel"""
-    def __init__(self, arg):
+    def __init__(self):
         super(SPDModel, self).__init__()
-        self.arg = arg
+
 
     def setup_lp(self):
         """ Setup a Linear Program from a defined ISO instance """
@@ -25,6 +25,8 @@ class SPDModel(object):
         self.addC = self.lp.addConstraint
         self.SUM = lp.lpSum
         self.lpDict = pulp.LpVariable.dicts
+
+        return self
 
 
 
