@@ -142,7 +142,7 @@ def test_operator_node_parameters():
 
     station = Station('station', operator, node, company, capacity=300)
 
-    operator._node_parameters()
+    operator._node_parameters('P55')
     assert operator.node_names[0] == 'P55_node'
     assert operator.nodal_demand['P55_node'] == 154
 
@@ -165,3 +165,11 @@ def test_operator_branch_parameters():
 
     assert operator.reserve_zone_flow_map['P55_RZ'] == []
     assert operator.reserve_zone_flow_direction['P55_RZ']['P55_node_node2'] == None
+
+@setup_function
+def test_reserve_zone_parameters():
+
+    station = Station('station', operator, node, company, capacity=300)
+    il = InterruptibleLoad('il', operator, node, company)
+
+    operator._reserve_zone_parameters('P55')
