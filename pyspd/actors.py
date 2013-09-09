@@ -30,7 +30,7 @@ class SystemOperator(object):
                 itname = ''.join(["Price", str(price)])
                 self.itinstances.apend(itname)
 
-                actor.add_offer_price(price)
+                actor.reserve_price = price
                 self.add_dispatch(itname)
 
         elif isinstance(quantities, np.ndarray):
@@ -56,8 +56,8 @@ class SystemOperator(object):
         """ Get the dispatch, apply the iterator name to each one
         """
 
-        self.itdispatches[itname]
-
+        for station in self.stations:
+            pass
 
 
     def _create_empty_variables(self):
@@ -126,7 +126,7 @@ class Company(object):
 
         self.stations = []
         self.interruptible_loads = []
-        return self
+
 
     def _add_station(self, Station):
         self.stations.append(Station)
@@ -149,7 +149,7 @@ class Node(object):
 
         RZ._add_node(self)
         self.RZ = RZ
-        return self
+
 
 
     def _add_station(self, Station):
@@ -172,7 +172,7 @@ class ReserveZone(object):
 
         self.stations = []
         self.interruptible_loads = []
-        return self
+
 
 
     def _add_node(self, Node):
@@ -187,6 +187,7 @@ class ReserveZone(object):
         self.interruptible_loads.append(IL)
         return self
 
+
 class Station(object):
     """docstring for Station"""
     def __init__(self, name, Node, Company, capacity=0):
@@ -198,7 +199,7 @@ class Station(object):
 
         Node._add_station(self)
         Company._add_station(self)
-        return self
+
 
 
     def add_energy_offer(self, price, offer):
@@ -206,12 +207,14 @@ class Station(object):
         self.energy_offer = offer
         return self
 
+
     def add_reserve_offer(self, price, offer, proportion):
 
         self.reserve_price = price
         self.reserve_offer = offer
         self.reserve_proportion = proportion
         return self
+
 
 class InterruptibleLoad(object):
     """docstring for InterruptibleLoad"""
@@ -223,7 +226,6 @@ class InterruptibleLoad(object):
 
         Node._add_intload(self)
         Company._add_intload(self)
-        return self
 
 
     def add_reserve_offer(self, price, offer):
@@ -231,6 +233,7 @@ class InterruptibleLoad(object):
         self.reserve_price = price
         self.reserve_offer = offer
         return self
+
 
 class Branch(object):
     """docstring for Branch"""
@@ -243,7 +246,7 @@ class Branch(object):
 
         self.capacity = capacity
         # Add the branch to each node
-        return self
+
 
 
 
