@@ -18,7 +18,7 @@ class SystemOperator(object):
         self._create_empty_variables()
 
 
-    def create_iterator(self, actor=None, prices=None, quantities=None):
+    def create_iterator(self, actor=None, variable='reserve_price', varrange=np.arange(0,5)):
         """ Take the actor and update all of the variable names
 
         """
@@ -26,20 +26,11 @@ class SystemOperator(object):
         self.itinstances = []
         self.itdispatches = {}
 
-        if isinstance(prices, np.ndarray):
-            for price in prices:
-                itname = ''.join(["Price", str(price)])
+        if variable
+            for value in varrange:
+                itname = ''.join([variable, str(value)])
                 self.itinstances.apend(itname)
-
-                actor.reserve_price = price
-                self.add_dispatch(itname)
-
-        elif isinstance(quantities, np.ndarray):
-            for quantity in quantities:
-                itname = ''.join(["Quantity", str(quantity)])
-                self.itinstances.apend(itname)
-
-                actor.set_offer_quantity(quantity)
+                actor.__dict__[variable] = value
                 self.add_dispatch(itname)
 
         else:
@@ -347,6 +338,26 @@ class Branch(object):
         self.name = '_'.join([sending_node.name, receiving_node.name])
 
         self.risk = risk
+
+
+
+def test_options():
+
+    operator = SystemOperator()
+    RZ = ReserveZone('RZ', operator)
+    company = Company('company')
+    node = Node("node", operator, RZ, demand=154)
+
+    station = Station('station', operator, node, company, capacity=300)
+    il = InterruptibleLoad('il', operator, node, company)
+
+    station.add_reserve_offer(50,300, 0.5)
+    station.add_energy_offer(25, 250)
+
+    il.add_reserve_offer(75, 50)
+
+    return (operator, RZ, company, node, station, il)
+
 
 
 
