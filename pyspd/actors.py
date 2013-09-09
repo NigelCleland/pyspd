@@ -229,7 +229,7 @@ class Node(object):
         self.demand = demand
 
         self.stations = []
-        self.intload = []
+        self.interruptible_loads = []
 
         RZ._add_node(self)
         self.RZ = RZ
@@ -245,7 +245,7 @@ class Node(object):
         return self
 
     def _add_interruptible_load(self, IL):
-        self.intload.append(IL)
+        self.interruptible_loads.append(IL)
         self.RZ._add_intload(IL)
         return self
 
@@ -316,10 +316,10 @@ class InterruptibleLoad(object):
         self.node = Node
         self.company = Company
 
-        Node._add_intload(self)
-        Company._add_intload(self)
+        Node._add_interruptible_load(self)
+        Company._add_interruptible_load(self)
 
-        SO._add_interruptible_load
+        SO._add_interruptible_load(self)
 
 
     def add_reserve_offer(self, price, offer):

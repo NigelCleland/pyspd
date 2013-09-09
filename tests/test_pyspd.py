@@ -66,3 +66,39 @@ def test_station_creation():
     assert company.stations[0] == station
     assert node.stations[0] == station
     assert RZ.stations[0] == station
+
+def test_il_creation():
+
+    operator = SystemOperator()
+    company = Company("company")
+    RZ = ReserveZone("RZ", operator)
+    node = Node("node", operator, RZ, demand=154)
+
+    il = InterruptibleLoad('IL', operator, node, company)
+
+    assert il.name == "IL"
+    assert operator.interruptible_loads[0] == il
+    assert RZ.interruptible_loads[0] == il
+    assert node.interruptible_loads[0] == il
+    assert company.interruptible_loads[0] == il
+
+
+def test_branch_creation():
+
+    operator = SystemOperator()
+    company = Company("company")
+    RZ = ReserveZone("RZ", operator)
+    node1 = Node("node1", operator, RZ, demand=154)
+    node2 = Node("node2", operator, RZ, demand=154)
+
+    branch = Branch(operator, node1, node2, risk=True, capacity=500)
+
+    assert branch.risk == True
+    assert branch.capacity == 500
+
+    assert branch.name == 'node1_node2'
+
+    assert branch.sending_node == node1
+    assert branch.receiving_node == node2
+
+    assert operator.branches[0] == branch
