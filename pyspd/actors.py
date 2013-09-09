@@ -14,6 +14,7 @@ class SystemOperator(object):
         self.nodes = []
         self.reserve_zones = []
         self.interruptible_loads = []
+        self.branches = []
 
     def _add_station(self, Station):
         """ Add a Station """
@@ -27,6 +28,9 @@ class SystemOperator(object):
 
     def _add_interruptible_load(self, IL):
         self.interruptible_loads.append(IL)
+
+    def _add_branch(self, Branch):
+        self.branches.append(Branch)
 
 # Define an Operator Class each time this is run!
 # This is a little bit of magic to make sure the decorators work
@@ -56,6 +60,11 @@ def addRZ(cls):
 def addIL(cls):
     def wrapped(cls, *args, **kargs):
         operator._add_interruptible_load(cls)
+    return wrapped
+
+def addBranch(cls):
+    def wrapped(cls, *args, **kargs):
+        operator.add_branch(cls)
     return wrapped
 
 
@@ -99,6 +108,7 @@ class ReserveZone(object):
         self.name = name
         self.nodes = []
 
+
     def _add_node(self, Node):
         self.nodes.append(Node)
 
@@ -120,6 +130,13 @@ class InterruptibleLoad(object):
     def __init__(self, name):
         super(InterruptibleLoad, self).__init__()
         self.name = name
+
+class Branch(object):
+    """docstring for Branch"""
+    @addBranch
+    def __init__(self, sending_node, receiving_node):
+        super(Branch, self).__init__()
+
 
 
 if __name__ == '__main__':
