@@ -107,6 +107,8 @@ class SystemOperator(object):
             self.node_flow_map[sn_name].append(name)
             self.node_flow_map[rn_name].append(name)
 
+            self.branch_capacity[name] = branch.capacity
+
             self.node_flow_direction[sn_name][name] = 1
             self.node_flow_direction[rn_name][name] = -1
 
@@ -182,6 +184,7 @@ class SystemOperator(object):
         self.branches = []
         self.branch_names = []
         self.branch_map = {}
+        self.branch_capacity = {}
         return self
 
     def _add_station(self, Station):

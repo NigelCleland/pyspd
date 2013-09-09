@@ -35,6 +35,14 @@ class SPDModel(object):
         self._obj_function()
         self._nodal_demand()
         self._energy_offers()
+        self._reserve_offers()
+        self._transmission_offer()
+        self._reserve_proportion()
+        self._reserve_combined()
+        self._generator_risk()
+        self._transmission_risk()
+        self._reserve_dispatch()
+
 
     def _create_variables(self):
         """ Create all of the variables necessary to solve the Linear Program
@@ -67,6 +75,23 @@ class SPDModel(object):
                         self.ISO.reserve_zone_names, 0)
 
 
+    def _obj_function(self):
+        """ Apply the objective function """
+
+        # Unpack the necessary variables
+        eoffers = self.energy_offers
+        eprices = self.ISO.energy_station_price
+        roffers = self.reserve_offers
+        rprices = self.ISO.reserve_station_price
+        enames = self.ISO.energy_station_names
+        rnames = self.ISO.reserve_station_names
+
+        # Set the objective function
+        self.lp.setObjective(self.SUM(
+                [eoffers[i] * eprices[i] for i in enames]) +\
+                self.SUM([roffers[j] * rprices[j] for j in rnames]))
+
+
     def _nodal_demand(self):
         """ Apply the nodal demand constraints """
         # Unpack variables
@@ -92,23 +117,6 @@ class SPDModel(object):
             # Net Injection from transmission
             self.addC(node_inj[node] == SUM([branch_flow[t] * flow_dir[t] for t in flow_map[node]]),n2)
 
-
-    def _obj_function(self):
-        """ Apply the objective function """
-
-        # Unpack the necessary variables
-        eoffers = self.energy_offers
-        eprices = self.ISO.energy_station_price
-        roffers = self.reserve_offers
-        rprices = self.ISO.reserve_station_price
-        enames = self.ISO.energy_station_names
-        rnames = self.ISO.reserve_station_names
-
-        # Set the objective function
-        self.lp.setObjective(self.SUM(
-                [eoffers[i] * eprices[i] for i in enames]) +\
-                self.SUM([roffers[j] * rprices[j] for j in rnames]))
-
     def _energy_offers(self):
         """ Constrain the Energy offers """
         # Unpack variables
@@ -132,7 +140,18 @@ class SPDModel(object):
             self.addC(roffers[i] <= rcapacity[i], name)
 
     def _transmission_offer(self):
-        pass
+
+        bflows = self.branch_flow
+        bnames = self.ISO.branch_names
+        bcapacity = self.ISO.branch_capacity
+
+        for i in bnames:
+            n1 = '_'.join([i, 'Pos_flow'])
+            n2 = '_'.join([i, 'Neg_flow'])
+
+            self.addC(bflows[i] <= bcapacity[i], n1)
+            self.addC(bflows[i] >= bcapacity[i] * -1, n2)
+
 
     def _reserve_proportion(self):
 
