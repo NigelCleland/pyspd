@@ -76,6 +76,10 @@ class SystemOperator(object):
             self.reserve_IL_capacity[name] = IL.reserve_offer
             self.reserve_IL_price[name] = IL.reserve_price
 
+            self.reserve_station_names.append(name)
+            self.reserve_station_price[name] = IL.reserve_price
+            self.reserve_station_capacity[name] = IL.reserve_offer
+
 
     def _node_parameters(self, itname):
         for node in self.nodes:
@@ -361,6 +365,8 @@ def test_options():
     station.add_energy_offer(25, 250)
 
     il.add_reserve_offer(75, 50)
+
+    operator.create_iterator(station)
 
     return (operator, RZ, company, node, station, il)
 

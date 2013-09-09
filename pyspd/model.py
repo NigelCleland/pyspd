@@ -24,7 +24,7 @@ class SPDModel(object):
         self.lp = pulp.LpProblem("SPD Dispatch", pulp.LpMinimize)
 
         self.addC = self.lp.addConstraint
-        self.SUM = lp.lpSum
+        self.SUM = pulp.lpSum
         self.lpDict = pulp.LpVariable.dicts
 
         return self
@@ -53,19 +53,19 @@ class SPDModel(object):
 
 
         self.energy_offers = self.lpDict("Energy_Total",
-                        self.ISO.energy_offers, 0)
+                        self.ISO.energy_station_names, 0)
 
         self.reserve_offers = self.lpDict("Reserve_Total",
-                        self.ISO.reserve_offers, 0)
+                        self.ISO.reserve_station_names, 0)
 
         self.transmission_offers = self.lpDict("Transmission_Total",
-                        self.ISO.transmission_offers)
+                        self.ISO.branch_names)
 
         self.nodal_injection = self.lpDict("Nodal_Injection",
-                        self.ISO.nodal_injection)
+                        self.ISO.node_names)
 
         self.reserve_zone_risk = self.lpDict("Reserve_Risk",
-                        self.ISO.reserve_zone_risk, 0)
+                        self.ISO.reserve_zone_names, 0)
 
 
     def _nodal_demand(self):
@@ -74,7 +74,19 @@ class SPDModel(object):
 
     def _obj_function(self):
         """ Apply the objective function """
-        pass
+
+        # Unpack the necessary variables
+        eoffers = self.energy_offers
+        eprices = self.ISO.energy_station_price
+        roffers = self.reserve_offers
+        rprices = self.ISO.reserve_station_price
+        enames = self.ISO.energy_station_names
+        rnames = self.ISO.reserve_station_names
+
+        # Set the objective function
+        self.lp.setObjective(self.SUM(
+                [eoffers[i] * eprices[i] for i in enames]) +\
+                self.SUM([roffers[j] * rprices[j] for j in rnames]))
 
     def _energy_offers(self):
         pass
