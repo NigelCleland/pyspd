@@ -124,3 +124,15 @@ def test_operator_station_parameters():
     assert operator.reserve_station_capacity['P55_station'] == 300
     assert operator.reserve_station_price['P55_station'] == 25
     assert operator.reserve_station_proportion['P55_station'] == 0.3
+
+@setup_function
+def test_operator_il_parameters():
+
+    il = InterruptibleLoad('il', operator, node, company)
+    il.add_reserve_offer(100, 200)
+
+    operator._interruptible_load_parameters('P55')
+
+    operator.reserve_IL_names[0] == 'P55_il'
+    operator.reserve_IL_price['P55_il'] == 100
+    operator.reserve_IL_capacity['P55_il'] == 200
