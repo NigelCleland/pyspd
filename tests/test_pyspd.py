@@ -122,3 +122,16 @@ def test_station_offer():
     assert station.reserve_price == 25
     assert station.reserve_offer == 300
     assert station.reserve_proportion == 0.3
+
+def test_il_offer():
+
+    operator = SystemOperator()
+    company = Company("company")
+    RZ = ReserveZone("RZ", operator)
+    node = Node("node", operator, RZ, demand=154)
+    il = InterruptibleLoad('il', operator, node, company)
+
+    il.add_reserve_offer(100, 200)
+
+    assert il.reserve_price == 100
+    assert il.reserve_offer == 200
