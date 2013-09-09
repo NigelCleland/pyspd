@@ -114,7 +114,7 @@ class SystemOperator(object):
                 self.reserve_zone_flow_map[rn_rz_name].append(name)
 
                 self.reserve_zone_flow_direction[sn_rz_name][name] = 1
-                self.reserve_zone_flow_direction[rn_rz_name][name] = =1
+                self.reserve_zone_flow_direction[rn_rz_name][name] = -1
 
 
     def _rezerve_zone_parameters(self, itname):
@@ -167,7 +167,7 @@ class SystemOperator(object):
         self.interruptible_load_names = []
         self.interruptible_load_map = {}
 
-        self.reserve_IL_names =
+        self.reserve_IL_names = []
         self.reserve_IL_capacity = {}
         self.reserve_IL_price = {}
 
@@ -216,14 +216,14 @@ class Company(object):
         self.stations.append(Station)
         return self
 
-    def _add_intload(self, IL):
+    def _add_interruptible_load(self, IL):
         self.interruptible_loads.append(IL)
         return self
 
 
 class Node(object):
     """docstring for Node"""
-    def __init__(self, name, RZ, demand=0):
+    def __init__(self, name, SO, RZ, demand=0):
         super(Node, self).__init__()
         self.name = name
         self.demand = demand
@@ -234,6 +234,9 @@ class Node(object):
         RZ._add_node(self)
         self.RZ = RZ
 
+        SO._add_node(self)
+        self.SO = SO
+
 
 
     def _add_station(self, Station):
@@ -241,7 +244,7 @@ class Node(object):
         self.RZ._add_station(Station)
         return self
 
-    def _add_intload(self, IL):
+    def _add_interruptible_load(self, IL):
         self.intload.append(IL)
         self.RZ._add_intload(IL)
         return self
@@ -249,7 +252,7 @@ class Node(object):
 
 class ReserveZone(object):
     """docstring for ReserveZone"""
-    def __init__(self, name):
+    def __init__(self, name, SO):
         super(ReserveZone, self).__init__()
         self.name = name
         self.nodes = []
@@ -257,6 +260,8 @@ class ReserveZone(object):
         self.stations = []
         self.interruptible_loads = []
 
+        self.SO = SO
+        SO._add_reserve_zone(self)
 
 
     def _add_node(self, Node):
@@ -274,7 +279,7 @@ class ReserveZone(object):
 
 class Station(object):
     """docstring for Station"""
-    def __init__(self, name, Node, Company, capacity=0):
+    def __init__(self, name, SO, Node, Company, capacity=0):
         super(Station, self).__init__()
         self.name = name
         self.node = Node
@@ -283,6 +288,9 @@ class Station(object):
 
         Node._add_station(self)
         Company._add_station(self)
+
+        self.SO = SO
+        SO._add_station(self)
 
 
 
@@ -302,7 +310,7 @@ class Station(object):
 
 class InterruptibleLoad(object):
     """docstring for InterruptibleLoad"""
-    def __init__(self, name, Node, Company):
+    def __init__(self, name, SO, Node, Company):
         super(InterruptibleLoad, self).__init__()
         self.name = name
         self.node = Node
@@ -310,6 +318,8 @@ class InterruptibleLoad(object):
 
         Node._add_intload(self)
         Company._add_intload(self)
+
+        SO._add_interruptible_load
 
 
     def add_reserve_offer(self, price, offer):
@@ -321,8 +331,10 @@ class InterruptibleLoad(object):
 
 class Branch(object):
     """docstring for Branch"""
-    def __init__(self, sending_node, receiving_node, capacity=0, risk=False):
+    def __init__(self, SO, sending_node, receiving_node, capacity=0, risk=False):
         super(Branch, self).__init__()
+
+        SO._add_branch(self)
 
         # Add the nodes
         self.sending_node = sending_node
