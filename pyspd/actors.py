@@ -5,6 +5,7 @@
 
 # C Imports
 import numpy as np
+from collections import defaultdict
 
 # ----------------------------------------------------------------------------
 # SYSTEM OPERATOR
@@ -55,9 +56,82 @@ class SystemOperator(object):
     def add_dispatch(self, itname):
         """ Get the dispatch, apply the iterator name to each one
         """
+        pass
 
+    def _station_parameters(self, itname):
         for station in self.stations:
-            pass
+            name = '_'.join([itname, station.name])
+            self.energy_station_names.append(name)
+            self.energy_station_capacity[name] = station.energy_offer
+            self.energy_station_price[name] = station.energy_price
+
+            self.reserve_station_names.append(name)
+            self.reserve_station_capacity[name] = station.reserve_offer
+            self.reserve_station_price[name] = station.reserve_price
+            self.reserve_station_proportion[name] = station.proportion
+
+
+
+    def _interruptible_load_parameters(self, itname):
+        for IL in self.interruptible_loads:
+            name = '_'.join([itname, IL.name])
+            self.reserve_IL_names.append(name)
+            self.reserve_IL_capacity[name] = IL.reserve_offer
+            self.reserve_IL_price[name] = IL.reserve_price
+
+
+    def _node_parameters(self, itname):
+        for node in self.nodes:
+            name = '_'.join([itname, node.name])
+            self.node_names.append(name)
+            self.nodal_demand[name] = node.demand
+
+            # Nodal Stations
+            for station in node.stations:
+                stat_name = '_'.join([itname, station.name])
+                self.nodal_stations[name].append(stat_name)
+
+
+    def _transmission_parameters(self, itname):
+        for branch in self.branches:
+            name = '_'.join([itname, branch.name])
+            sn_name = '_'.join([itname, branch.sending_node.name])
+            rn_name = '_'.join([itname, branch.receiving_node.name])
+
+            self.branch_names.append(name)
+
+            self.node_flow_map[sn_name].append(name)
+            self.node_flow_map[rn_name].append(name)
+
+            self.node_flow_direction[sn_name][name] = 1
+            self.node_flow_direction[rn_name][name] = -1
+
+            if branch.risk:
+                sn_rz_name = '_'.join([itname, branch.sending_node.RZ.name])
+                rn_rz_name = '_'.join([itname, branch.receiving_node.RZ.name])
+
+                self.reserve_zone_flow_map[sn_rz_name].append(name)
+                self.reserve_zone_flow_map[rn_rz_name].append(name)
+
+                self.reserve_zone_flow_direction[sn_rz_name][name] = 1
+                self.reserve_zone_flow_direction[rn_rz_name][name] = -1
+
+
+    def _rezerve_zone_parameters(self, itname):
+        for rz in self.reserve_zones:
+            name = '_'.join([itname, rz.name])
+
+            self.reserve_zone_names.append(name)
+
+            for station in rz.stations:
+                stat_name = '_'.join([itname, station.name])
+                self.reserve_zone_reserve[name].append(stat_name)
+                self.reserve_zone_generators[name].append(stat_name)
+
+            for il in rz.interruptible_loads:
+                il_name = '_'.join([itname, il.name])
+                self.reserve_zone_reserve[name].append(il_name)
+
 
 
     def _create_empty_variables(self):
@@ -65,17 +139,37 @@ class SystemOperator(object):
         self.station_names = []
         self.station_map = {}
 
+        self.energy_station_names = []
+        self.reserve_station_names = []
+        self.energy_station_price = {}
+        self.energy_station_capacity = {}
+        self.reserve_station_price = {}
+        self.reserve_station_proportion = {}
+        self.reserve_station_capacity = {}
+
         self.nodes = []
         self.node_names = []
         self.node_map = {}
+        self.node_flow_direction = defaultdict(dict)
+        self.node_flow_map = defaultdict(list)
+        self.nodal_stations = defaultdict(list)
+        self.nodal_demand = {}
 
         self.reserve_zones = []
         self.reserve_zone_names = []
-        self.reserve_zone_map = {}
+        self.reserve_zone_generators = defaultdict(list)
+        self.reserve_zone_reserve = defaultdict(list)
+        self.reserve_zone_transmission = defaultdict(list)
+        self.reserve_zone_flow_map = defaultdict(list)
+        self.reserve_zone_flow_direction = defaultdict(dict)
 
         self.interruptible_loads = []
         self.interruptible_load_names = []
         self.interruptible_load_map = {}
+
+        self.reserve_IL_names = []
+        self.reserve_IL_capacity = {}
+        self.reserve_IL_price = {}
 
         self.branches = []
         self.branch_names = []
@@ -85,32 +179,22 @@ class SystemOperator(object):
     def _add_station(self, Station):
         """ Add a Station """
         self.stations.append(Station)
-        self.station_names.append(Station)
-        self.station_map[Station.name] = Station
         return self
 
     def _add_node(self, Node):
         self.nodes.append(Node)
-        self.node_names.append(Node.name)
-        self.node_map[Node.name] = Node
         return self
 
     def _add_reserve_zone(self, RZ):
         self.reserve_zones.append(RZ)
-        self.reserve_zone_names.append(RZ.name)
-        self.reserve_zone_map[RZ.name] = RZ
         return self
 
     def _add_interruptible_load(self, IL):
         self.interruptible_loads.append(IL)
-        self.interruptible_load_names.append(IL.name)
-        self.interruptible_load_map[IL.name] = IL
         return self
 
     def _add_branch(self, Branch):
         self.branches.append(Branch)
-        self.branch_names.append(Branch.name)
-        self.branch_map[Branch.name] = Branch
         return self
 
 # ----------------------------------------------------------------------------
@@ -132,23 +216,26 @@ class Company(object):
         self.stations.append(Station)
         return self
 
-    def _add_intload(self, IL):
+    def _add_interruptible_load(self, IL):
         self.interruptible_loads.append(IL)
         return self
 
 
 class Node(object):
     """docstring for Node"""
-    def __init__(self, name, RZ, demand=0):
+    def __init__(self, name, SO, RZ, demand=0):
         super(Node, self).__init__()
         self.name = name
         self.demand = demand
 
         self.stations = []
-        self.intload = []
+        self.interruptible_loads = []
 
         RZ._add_node(self)
         self.RZ = RZ
+
+        SO._add_node(self)
+        self.SO = SO
 
 
 
@@ -157,15 +244,15 @@ class Node(object):
         self.RZ._add_station(Station)
         return self
 
-    def _add_intload(self, IL):
-        self.intload.append(IL)
+    def _add_interruptible_load(self, IL):
+        self.interruptible_loads.append(IL)
         self.RZ._add_intload(IL)
         return self
 
 
 class ReserveZone(object):
     """docstring for ReserveZone"""
-    def __init__(self, name):
+    def __init__(self, name, SO):
         super(ReserveZone, self).__init__()
         self.name = name
         self.nodes = []
@@ -173,6 +260,8 @@ class ReserveZone(object):
         self.stations = []
         self.interruptible_loads = []
 
+        self.SO = SO
+        SO._add_reserve_zone(self)
 
 
     def _add_node(self, Node):
@@ -190,7 +279,7 @@ class ReserveZone(object):
 
 class Station(object):
     """docstring for Station"""
-    def __init__(self, name, Node, Company, capacity=0):
+    def __init__(self, name, SO, Node, Company, capacity=0):
         super(Station, self).__init__()
         self.name = name
         self.node = Node
@@ -199,6 +288,9 @@ class Station(object):
 
         Node._add_station(self)
         Company._add_station(self)
+
+        self.SO = SO
+        SO._add_station(self)
 
 
 
@@ -218,14 +310,16 @@ class Station(object):
 
 class InterruptibleLoad(object):
     """docstring for InterruptibleLoad"""
-    def __init__(self, name, Node, Company):
+    def __init__(self, name, SO, Node, Company):
         super(InterruptibleLoad, self).__init__()
         self.name = name
         self.node = Node
         self.company = Company
 
-        Node._add_intload(self)
-        Company._add_intload(self)
+        Node._add_interruptible_load(self)
+        Company._add_interruptible_load(self)
+
+        SO._add_interruptible_load(self)
 
 
     def add_reserve_offer(self, price, offer):
@@ -237,15 +331,20 @@ class InterruptibleLoad(object):
 
 class Branch(object):
     """docstring for Branch"""
-    def __init__(self, sending_node, receiving_node, capacity=0):
+    def __init__(self, SO, sending_node, receiving_node, capacity=0, risk=False):
         super(Branch, self).__init__()
+
+        SO._add_branch(self)
 
         # Add the nodes
         self.sending_node = sending_node
         self.receiving_node = receiving_node
 
         self.capacity = capacity
-        # Add the branch to each node
+
+        self.name = '_'.join([sending_node.name, receiving_node.name])
+
+        self.risk = risk
 
 
 

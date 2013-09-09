@@ -8,21 +8,97 @@ test_pyspd
 Tests for `pyspd` module.
 """
 
-import unittest
+import pytest
+from pyspd import *
 
-from pyspd import pyspd
+def test_operator_creation():
+
+    operator = SystemOperator()
+    assert isinstance(operator, SystemOperator)
+
+def test_rz_creation():
+
+    operator = SystemOperator()
+
+    RZ = ReserveZone("RZ", operator)
+    assert RZ.name  == "RZ"
+    assert RZ.nodes == []
+    assert RZ.stations == []
+    assert RZ.interruptible_loads == []
+
+    assert operator.reserve_zones[0] == RZ
+
+def test_node_creation():
+
+    operator = SystemOperator()
+    RZ = ReserveZone("RZ", operator)
+    node = Node("node", operator, RZ, demand=154)
+
+    assert node.name == 'node'
+    assert operator.nodes[0] == node
+    assert node.RZ == RZ
+    assert RZ.nodes[0] == node
+    assert node.demand == 154
+
+def test_company_creation():
+
+    operator = SystemOperator()
+
+    company = Company("company")
+
+    assert company.name == 'company'
+    assert company.stations == []
+    assert company.interruptible_loads == []
+
+def test_station_creation():
+
+    operator = SystemOperator()
+    company = Company("company")
+    RZ = ReserveZone("RZ", operator)
+    node = Node("node", operator, RZ, demand=154)
+
+    station = Station("station", operator, node, company, capacity=500)
+
+    assert station.name == "station"
+    assert station.capacity == 500
+
+    assert operator.stations[0] == station
+    assert company.stations[0] == station
+    assert node.stations[0] == station
+    assert RZ.stations[0] == station
+
+def test_il_creation():
+
+    operator = SystemOperator()
+    company = Company("company")
+    RZ = ReserveZone("RZ", operator)
+    node = Node("node", operator, RZ, demand=154)
+
+    il = InterruptibleLoad('IL', operator, node, company)
+
+    assert il.name == "IL"
+    assert operator.interruptible_loads[0] == il
+    assert RZ.interruptible_loads[0] == il
+    assert node.interruptible_loads[0] == il
+    assert company.interruptible_loads[0] == il
 
 
-class TestPyspd(unittest.TestCase):
+def test_branch_creation():
 
-    def setUp(self):
-        pass
+    operator = SystemOperator()
+    company = Company("company")
+    RZ = ReserveZone("RZ", operator)
+    node1 = Node("node1", operator, RZ, demand=154)
+    node2 = Node("node2", operator, RZ, demand=154)
 
-    def test_something(self):
-        pass
+    branch = Branch(operator, node1, node2, risk=True, capacity=500)
 
-    def tearDown(self):
-        pass
+    assert branch.risk == True
+    assert branch.capacity == 500
 
-if __name__ == '__main__':
-    unittest.main()
+    assert branch.name == 'node1_node2'
+
+    assert branch.sending_node == node1
+    assert branch.receiving_node == node2
+
+    assert operator.branches[0] == branch

@@ -35,10 +35,38 @@ class SPDModel(object):
 
         # Iterate over the difference instances:
 
-        for itname in self.ISO.itinstances:
+        pass
 
-            # Apply the Constraints for each instance
-            pass
+    def _create_variables(self):
+        """ Create all of the variables necessary to solve the Linear Program
+        This maps the variables from the ISO to the requisite Linear Program
+        Variables
+
+        Returns:
+        --------
+        energy_total_offers
+        reserve_total_offers
+        transmission_total_offers
+        nodal_injection
+        reserve_zone_risk
+        """
+
+
+        self.energy_offers = self.lpDict("Energy_Total",
+                        self.ISO.energy_offers, 0)
+
+        self.reserve_offers = self.lpDict("Reserve_Total",
+                        self.ISO.reserve_offers, 0)
+
+        self.transmission_offers = self.lpDict("Transmission_Total",
+                        self.ISO.transmission_offers)
+
+        self.nodal_injection = self.lpDict("Nodal_Injection",
+                        self.ISO.nodal_injection)
+
+        self.reserve_zone_risk = self.lpDict("Reserve_Risk",
+                        self.ISO.reserve_zone_risk, 0)
+
 
     def _nodal_demand(self):
         """ Apply the nodal demand constraints """
@@ -48,22 +76,13 @@ class SPDModel(object):
         """ Apply the objective function """
         pass
 
-    def _energy_band_offers(self):
+    def _energy_offers(self):
         pass
 
-    def _reserve_band_offers(self):
+    def _reserve_offers(self):
         pass
 
-    def _transmission_band_capacity(self):
-        pass
-
-    def _energy_total_offers(self):
-        pass
-
-    def _reserve_total_offers(self):
-        pass
-
-    def _transmission_total_offer(self):
+    def _transmission_offer(self):
         pass
 
     def _reserve_proportion(self):
