@@ -56,41 +56,78 @@ class SystemOperator(object):
         """ Get the dispatch, apply the iterator name to each one
         """
 
-        # Energy Stations
+    def _station_parameters(self, itname):
         for station in self.stations:
-            name = ' '.join([itname, station.name])
+            name = '_'.join([itname, station.name])
             self.energy_station_names.append(name)
             self.energy_station_capacity[name] = station.energy_offer
             self.energy_station_price[name] = station.energy_price
 
-        # Reserve Stations
-        for station in self.stations:
-            name = ' '.join([itname, station.name])
             self.reserve_station_names.append(name)
             self.reserve_station_capacity[name] = station.reserve_offer
             self.reserve_station_price[name] = station.reserve_price
             self.reserve_station_proportion[name] = station.proportion
 
-        # Interruptible Load
+
+
+    def _interruptible_load_parameters(self, itname):
         for IL in self.interruptible_loads:
-            name = ' '.join([itname, IL.name])
+            name = '_'.join([itname, IL.name])
             self.reserve_IL_names.append(name)
             self.reserve_IL_capacity[name] = IL.reserve_offer
             self.reserve_IL_price[name] = IL.reserve_price
 
-        # Nodal Demand
+
+    def _node_parameters(self, itname):
         for node in self.nodes:
-            name = ' '.join([itname, node.name])
+            name = '_'.join([itname, node.name])
             self.node_names.append(name)
             self.nodal_demand[name] = node.demand
 
-        # Transmisison Branches
-        for branch in self.branches:
-            pass
+            # Nodal Stations
+            for station in node.stations:
+                stat_name = '_'.join([itname, station.name])
+                self.nodal_stations[name].append(stat_name)
 
-        # Reserve Zones
+
+    def _transmission_parameters(self, itname):
+        for branch in self.branches:
+            name = '_'.join([itname, branch.name])
+            sn_name = '_'.join([itname, branch.sending_node.name])
+            rn_name = '_'.join([itname, branch.receiving_node.name])
+
+            self.branch_names.append(name)
+
+            self.node_flow_map[sn_name].append(name)
+            self.node_flow_map[rn_name].append(name)
+
+            self.node_flow_direction[sn_name][name] = 1
+            self.node_flow_direction[rn_name][name] = -1
+
+            if branch.risk:
+                sn_rz_name = '_'.join([itname, branch.sending_node.RZ.name])
+                rn_rz_name = '_'.join([itname, branch.receiving_node.RZ.name])
+
+                self.reserve_zone_flow_map[sn_rz_name].append(name)
+                self.reserve_zone_flow_map[rn_rz_name].append(name)
+
+                self.reserve_zone_flow_direction[sn_rz_name][name] = 1
+                self.reserve_zone_flow_direction[rn_rz_name][name] = =1
+
+    def _rezerve_zone_parameters(self, itname):
         for rz in self.reserve_zones:
-            pass
+            name = '_'.join([itname, rz.name])
+
+            self.reserve_zone_names.append(name)
+
+            for station in rz.stations:
+                stat_name = '_'.join([itname, station.name])
+                self.reserve_zone_reserve[name].append(stat_name)
+                self.reserve_zone_generators[name].append(stat_name)
+
+            for il in rz.interruptible_loads:
+                il_name = '_'.join([itname, il.name])
+                self.reserve_zone_reserve[name].append(il_name)
 
 
 
@@ -261,7 +298,7 @@ class InterruptibleLoad(object):
 
 class Branch(object):
     """docstring for Branch"""
-    def __init__(self, sending_node, receiving_node, capacity=0):
+    def __init__(self, sending_node, receiving_node, capacity=0, risk=False):
         super(Branch, self).__init__()
 
         # Add the nodes
@@ -269,7 +306,10 @@ class Branch(object):
         self.receiving_node = receiving_node
 
         self.capacity = capacity
-        # Add the branch to each node
+
+        self.name = '_'.join([sending_node.name, receiving_node.name])
+
+        self.risk = risk
 
 
 
