@@ -133,9 +133,9 @@ def test_operator_il_parameters():
 
     operator._interruptible_load_parameters('P55')
 
-    operator.reserve_IL_names[0] == 'P55_il'
-    operator.reserve_IL_price['P55_il'] == 100
-    operator.reserve_IL_capacity['P55_il'] == 200
+    assert operator.reserve_IL_names[0] == 'P55_il'
+    assert operator.reserve_IL_price['P55_il'] == 100
+    assert operator.reserve_IL_capacity['P55_il'] == 200
 
 @setup_function
 def test_operator_node_parameters():
@@ -143,7 +143,25 @@ def test_operator_node_parameters():
     station = Station('station', operator, node, company, capacity=300)
 
     operator._node_parameters()
-    operator.node_names[0] == 'P55_node'
-    operator.nodal_demand['P55_node'] == 154
+    assert operator.node_names[0] == 'P55_node'
+    assert operator.nodal_demand['P55_node'] == 154
 
-    operator.nodal_stations['P55_node'][0] == 'P55_station'
+    assert operator.nodal_stations['P55_node'][0] == 'P55_station'
+
+@setup_function
+def test_operator_branch_parameters():
+
+    node2 = Node('node2', operator, RZ, demand=200)
+
+    branch = Branch(operator, node, node2, capacity=150, risk=True)
+
+    operator._transmission_parameters('P55')
+
+    assert operator.branch_names[0] == 'P55_node_node2'
+    assert operator.node_flow_map['P55_node'][0] == 'P55_node_node2'
+    assert operator.node_flow_map['P55_node2'][0] == 'P55_node_node2'
+    assert operator.node_flow_direction['P55_node']['P55_node_node2'] == 1
+    assert operator.node_flow_direction['P55_node2']['P55_node_node2'] == -1
+
+    assert operator.reserve_zone_flow_map['P55_RZ'] == []
+    assert operator.reserve_zone_flow_direction['P55_RZ']['P55_node_node2'] == None
