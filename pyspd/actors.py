@@ -366,7 +366,7 @@ def test_options():
     company = Company('company')
     node = Node("node", operator, RZ, demand=154)
 
-    station = Station('station', operator, node, company, capacity=300)
+    station = Station('station', operator, node, company, capacity=400)
     il = InterruptibleLoad('il', operator, node, company)
 
     station.add_reserve_offer(50,300, 1.0)

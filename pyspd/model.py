@@ -214,7 +214,7 @@ class SPDModel(object):
 
         for i in rzones:
             name = '_'.join([i, 'Reserve_Price'])
-            self.addC(self.SUM([roffer[j] for j in rzone_stations[i]]) - rzone_risk[i] >= 0, name)
+            self.addC(self.SUM([roffer[j] for j in rzone_stations[i]]) >= rzone_risk[i], name)
 
 
     def write_lp(self, fName=None):
@@ -263,3 +263,6 @@ class SPDModel(object):
         return {n: self.lp.constraints[n].pi
                     for n in self.lp.constraints if condition in n}
 
+
+if __name__ == '__main__':
+    pass
