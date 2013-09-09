@@ -68,7 +68,7 @@ class SystemOperator(object):
             self.reserve_station_names.append(name)
             self.reserve_station_capacity[name] = station.reserve_offer
             self.reserve_station_price[name] = station.reserve_price
-            self.reserve_station_proportion[name] = station.proportion
+            self.reserve_station_proportion[name] = station.reserve_proportion
 
 
 

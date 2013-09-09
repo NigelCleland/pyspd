@@ -135,3 +135,27 @@ def test_il_offer():
 
     assert il.reserve_price == 100
     assert il.reserve_offer == 200
+
+
+def test_operator_station_parameters():
+    operator = SystemOperator()
+    company = Company("company")
+    RZ = ReserveZone("RZ", operator)
+    node = Node("node", operator, RZ, demand=154)
+
+    station = Station('station', operator, node, company, capacity=300)
+
+    station.add_energy_offer(50, 100)
+
+    station.add_reserve_offer(25, 300, 0.3)
+
+    operator._station_parameters('P55')
+
+    assert operator.energy_station_names[0] == 'P55_station'
+    assert operator.energy_station_capacity['P55_station'] == 100
+    assert operator.energy_station_price['P55_station'] == 50
+
+    assert operator.reserve_station_names[0] == 'P55_station'
+    assert operator.reserve_station_capacity['P55_station'] == 300
+    assert operator.reserve_station_price['P55_station'] == 25
+    assert operator.reserve_station_proportion['P55_station'] == 0.3
