@@ -173,3 +173,9 @@ def test_reserve_zone_parameters():
     il = InterruptibleLoad('il', operator, node, company)
 
     operator._reserve_zone_parameters('P55')
+
+    assert operator.reserve_zone_names[0] == 'P55_RZ'
+    assert operator.reserve_zone_reserve['P55_RZ'][0] == 'P55_station'
+    assert operator.reserve_zone_generators['P55_RZ'][0] == 'P55_station'
+
+    assert operator.reserve_zone_reserve['P55_RZ'][1] == 'P55_il'
