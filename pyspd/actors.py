@@ -369,12 +369,12 @@ def test_options():
     station = Station('station', operator, node, company, capacity=300)
     il = InterruptibleLoad('il', operator, node, company)
 
-    station.add_reserve_offer(50,300, 0.5)
+    station.add_reserve_offer(50,300, 1.0)
     station.add_energy_offer(25, 250)
 
-    il.add_reserve_offer(75, 50)
+    il.add_reserve_offer(75, 150)
 
-    operator.create_iterator(station)
+    operator.create_iterator(station, 'energy_price', np.arange(10,200,10))
 
     return (operator, RZ, company, node, station, il)
 

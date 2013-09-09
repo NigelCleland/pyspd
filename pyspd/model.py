@@ -225,3 +225,41 @@ class SPDModel(object):
         self.lp.solve(pulp.COIN_CMD())
         self.solution_time = time.time() - begin
 
+    def parse_result(self):
+
+        self._parse_risk()
+        self._parse_energy_prices()
+        self._parse_reserve_prices()
+        self._parse_branch_flow()
+        self._parse_reserve_dispatch()
+        self._parse_energy_dispatch()
+
+
+    def _parse_energy_prices(self):
+        """ Parse The Energy Prices """
+        self.final_energy_prices = self._condict("Energy_Price")
+
+    def _parse_reserve_prices(self):
+        self.final_reserve_prices = self._condict("Reserve_Price")
+
+    def _parse_energy_dispatch(self):
+        self.final_energy_dispatch = self._vardict("Energy_Total")
+
+    def _parse_reserve_dispatch(self):
+        self.final_reserve_dispatch = self._vardict('Reserve_Total')
+
+    def _parse_branch_flow(self):
+        self.final_branch_flow = self._vardict('Transmission_Total')
+
+    def _parse_risk(self):
+        self.final_risk_requirements = self._vardict("Reserve_Risk")
+
+
+    def _vardict(self, condition):
+        return {n: n.varValue for n in self.lp.variables()
+                        if condition in n.name}
+
+    def _condict(self, condition):
+        return {n: self.lp.constraints[n].pi
+                    for n in self.lp.constraints if condition in n}
+
