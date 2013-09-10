@@ -24,7 +24,7 @@ clean-pyc:
 	find . -name '*~' -exec rm -f {} +
 
 lint:
-	flake8 pyspd tests
+	flake8 pyspd > pyspd_lint.txt
 
 test:
 	python setup.py test

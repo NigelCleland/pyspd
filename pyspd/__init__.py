@@ -5,5 +5,12 @@ __author__ = 'Nigel Cleland'
 __email__ = 'nigel.cleland@gmail.com'
 __version__ = '0.1.0'
 
-from actors import *
-from model import *
+from actors import (SystemOperator,
+                    Station,
+                    Company,
+                    Node,
+                    ReserveZone,
+                    Branch,
+                    InterruptibleLoad)
+
+from model import SPDmodel

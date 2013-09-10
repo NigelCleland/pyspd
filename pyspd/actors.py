@@ -7,10 +7,10 @@ from collections import defaultdict
 # C Imports
 import numpy as np
 
-
 # ----------------------------------------------------------------------------
 # SYSTEM OPERATOR
 # ----------------------------------------------------------------------------
+
 
 class SystemOperator(object):
     """System Operator
@@ -36,8 +36,8 @@ class SystemOperator(object):
         super(SystemOperator, self).__init__()
         self._create_empty_variables()
 
-
-    def create_iterator(self, actor=None, variable='reserve_price', varrange=np.arange(0,5)):
+    def create_iterator(self, actor=None, variable='reserve_price',
+                        varrange=np.arange(0, 5)):
         """ Create a range of duplicate scenarios which are all solved
         at once to assess the benefits of a particular strategy over
         a particular run.
@@ -69,14 +69,12 @@ class SystemOperator(object):
 
         else:
             # Do a single dispatch
-            itname="Single"
+            itname = "Single"
             self.itinstances.append(itname)
 
             self._add_dispatch(itname)
 
         return self
-
-
 
     def _add_dispatch(self, itname):
         """ Convenience wrapper, calls each of the parameter functons
@@ -93,7 +91,6 @@ class SystemOperator(object):
         self._node_parameters(itname)
         self._transmission_parameters(itname)
         self._rezerve_zone_parameters(itname)
-
 
     def _station_parameters(self, itname):
         """ Hidden function will create a number of lists and dictionaries
@@ -115,8 +112,6 @@ class SystemOperator(object):
             self.reserve_spinning_stations.append(name)
             self.total_station_capacity[name] = station.capacity
 
-
-
     def _interruptible_load_parameters(self, itname):
         """ Hidden function will create a number of lists and dictionaries
         containing information about the Linear Program to be passed
@@ -133,7 +128,6 @@ class SystemOperator(object):
             self.reserve_station_price[name] = IL.reserve_price
             self.reserve_station_capacity[name] = IL.reserve_offer
 
-
     def _node_parameters(self, itname):
         """ Hidden function will create a number of lists and dictionaries
         containing information about the Linear Program to be passed
@@ -149,7 +143,6 @@ class SystemOperator(object):
             for station in node.stations:
                 stat_name = '_'.join([itname, station.name])
                 self.nodal_stations[name].append(stat_name)
-
 
     def _transmission_parameters(self, itname):
         """ Hidden function will create a number of lists and dictionaries
@@ -184,7 +177,6 @@ class SystemOperator(object):
                     self.reserve_zone_flow_direction[sn_rz_name][name] = 1
                     self.reserve_zone_flow_direction[rn_rz_name][name] = -1
 
-
     def _rezerve_zone_parameters(self, itname):
         """ Hidden function will create a number of lists and dictionaries
         containing information about the Linear Program to be passed
@@ -204,8 +196,6 @@ class SystemOperator(object):
             for il in rz.interruptible_loads:
                 il_name = '_'.join([itname, il.name])
                 self.reserve_zone_reserve[name].append(il_name)
-
-
 
     def _create_empty_variables(self):
         """ Initialises a number of empty lists and dictionaries
@@ -302,7 +292,6 @@ class Company(object):
         self.stations = []
         self.interruptible_loads = []
 
-
     def _add_station(self, Station):
         """ Automatically add a station to the Company.
         Is called when a Station is created.
@@ -365,8 +354,6 @@ class Node(object):
         SO._add_node(self)
         self.SO = SO
 
-
-
     def _add_station(self, Station):
         """ Automatically add a station to both the Node and the Reserve Zone
 
@@ -420,7 +407,6 @@ class ReserveZone(object):
 
         self.SO = SO
         SO._add_reserve_zone(self)
-
 
     def _add_node(self, Node):
         """ Adds a node automatically to the Reserve Zone.
@@ -497,8 +483,6 @@ class Station(object):
         self.SO = SO
         SO._add_station(self)
 
-
-
     def add_energy_offer(self, price, offer):
         """ Adds an Energy Offer to the station
 
@@ -513,7 +497,6 @@ class Station(object):
         self.energy_price = price
         self.energy_offer = offer
         return self
-
 
     def add_reserve_offer(self, price, offer, proportion):
         """ Adds a Reserve Offer to the Station
@@ -568,7 +551,6 @@ class InterruptibleLoad(object):
 
         SO._add_interruptible_load(self)
 
-
     def add_reserve_offer(self, price, offer):
         """ Add a Reserve Offer to the object consisting of a price and offer
 
@@ -611,7 +593,8 @@ class Branch(object):
         Flag to treat the branch as a risk setting object.
 
     """
-    def __init__(self, SO, sending_node, receiving_node, capacity=0, risk=False):
+    def __init__(self, SO, sending_node, receiving_node, capacity=0,
+                 risk=False):
         super(Branch, self).__init__()
 
         SO._add_branch(self)
@@ -626,8 +609,5 @@ class Branch(object):
 
         self.risk = risk
 
-
-
 if __name__ == '__main__':
     pass
-

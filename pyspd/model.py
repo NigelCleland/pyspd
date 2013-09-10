@@ -9,6 +9,7 @@ Overall Model for the linear program.
 import pulp
 import time
 
+
 class SPDModel(object):
     """SPDModel
 
@@ -88,9 +89,6 @@ class SPDModel(object):
 
         return self
 
-
-
-
     def _create_variables(self):
         """ Create all of the variables necessary to solve the Linear Program
         This maps the variables from the ISO to the requisite Linear Program
@@ -106,20 +104,19 @@ class SPDModel(object):
         """
 
         self.energy_offers = self.lpDict("Energy_Total",
-                        self.ISO.energy_station_names, 0)
+                                         self.ISO.energy_station_names, 0)
 
         self.reserve_offers = self.lpDict("Reserve_Total",
-                        self.ISO.reserve_station_names, 0)
+                                          self.ISO.reserve_station_names, 0)
 
         self.branch_flow = self.lpDict("Transmission_Total",
-                        self.ISO.branch_names)
+                                       self.ISO.branch_names)
 
         self.nodal_injection = self.lpDict("Nodal_Injection",
-                        self.ISO.node_names)
+                                           self.ISO.node_names)
 
         self.reserve_zone_risk = self.lpDict("Reserve_Risk",
-                        self.ISO.reserve_zone_names, 0)
-
+                                             self.ISO.reserve_zone_names, 0)
 
     def _obj_function(self):
         """ Objective Function
@@ -137,9 +134,9 @@ class SPDModel(object):
 
         # Set the objective function
         self.lp.setObjective(self.SUM(
-                [eoffers[i] * eprices[i] for i in enames]) +\
-                self.SUM([roffers[j] * rprices[j] for j in rnames]))
-
+                             [eoffers[i] * eprices[i] for i in enames]) +
+                             self.SUM([roffers[j] * rprices[j]
+                                       for j in rnames]))
 
     def _nodal_demand(self):
         """ Nodal Demand constraints
@@ -167,10 +164,13 @@ class SPDModel(object):
             n2 = '_'.join([node, 'Nodal_Transmission'])
 
             # Net Injections from Energy and Demand
-            self.addC(node_inj[node] == self.SUM([energy_offer[i] for i in nodal_stations[node]]) - nodal_demand[node], n1)
+            self.addC(node_inj[node] == self.SUM([energy_offer[i]
+                                                 for i in nodal_stations[node]]
+                                                 ) - nodal_demand[node], n1)
 
             # Net Injection from transmission
-            self.addC(node_inj[node] == self.SUM([branch_flow[t] * flow_dir[t] for t in flow_map[node]]),n2)
+            self.addC(node_inj[node] == self.SUM([branch_flow[t] * flow_dir[t]
+                                                 for t in flow_map[node]]), n2)
 
     def _energy_offers(self):
         """Energy offer constraints
@@ -186,7 +186,6 @@ class SPDModel(object):
         for i in enames:
             name = '_'.join([i, 'Total_Energy'])
             self.addC(eoffers[i] <= ecapacity[i], name)
-
 
     def _reserve_offers(self):
         """ Reserve Offer constraints
@@ -212,7 +211,6 @@ class SPDModel(object):
 
         """
 
-
         bflows = self.branch_flow
         bnames = self.ISO.branch_names
         bcapacity = self.ISO.branch_capacity
@@ -223,7 +221,6 @@ class SPDModel(object):
 
             self.addC(bflows[i] <= bcapacity[i], n1)
             self.addC(bflows[i] >= bcapacity[i] * -1, n2)
-
 
     def _reserve_proportion(self):
         """ Reserve Proportion Constraints
@@ -276,7 +273,6 @@ class SPDModel(object):
                 name = '_'.join([i, j, 'Generator_Risk'])
                 self.addC(rzone_risk[i] >= eoffers[j], name)
 
-
     def _transmission_risk(self):
         """ Risk for a Transmission line
 
@@ -293,7 +289,7 @@ class SPDModel(object):
 
         for i in rzones:
             for j in bflow_map[i]:
-                name = '_'.join([i,j, "Transmission_Risk"])
+                name = '_'.join([i, j, "Transmission_Risk"])
                 self.addC(rzone_risk[i] >= bflow[j] * bflow_dir[j], name)
 
     def _reserve_dispatch(self):
@@ -311,8 +307,9 @@ class SPDModel(object):
 
         for i in rzones:
             name = '_'.join([i, 'Reserve_Price'])
-            self.addC(self.SUM([roffer[j] for j in rzone_stations[i]]) >= rzone_risk[i], name)
-
+            self.addC(self.SUM([roffer[j]
+                               for j in rzone_stations[i]]
+                               ) >= rzone_risk[i], name)
 
     def _parse_energy_prices(self):
         """ Parse The Energy Prices """
@@ -338,17 +335,15 @@ class SPDModel(object):
         """ Parse the Risk parameters """
         self.final_risk_requirements = self._vardict("Reserve_Risk")
 
-
     def _vardict(self, condition):
         """ Generic method for extracting values from variables """
         return {n: n.varValue for n in self.lp.variables()
-                        if condition in n.name}
+                if condition in n.name}
 
     def _condict(self, condition):
         """ Generic method for extracting values from constraints """
         return {n: self.lp.constraints[n].pi
-                    for n in self.lp.constraints if condition in n}
-
+                for n in self.lp.constraints if condition in n}
 
 if __name__ == '__main__':
     pass
