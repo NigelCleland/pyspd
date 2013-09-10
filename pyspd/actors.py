@@ -2,24 +2,58 @@
 # -*- coding: utf-8 -*-
 
 # Standard Library Imports
+from collections import defaultdict
 
 # C Imports
 import numpy as np
-from collections import defaultdict
+
 
 # ----------------------------------------------------------------------------
 # SYSTEM OPERATOR
 # ----------------------------------------------------------------------------
 
 class SystemOperator(object):
-    """System Operator class takes all of the """
+    """System Operator
+
+    This is a container which contains all of the information about the
+    System. This includes demand data, nodes, stations etc.
+    It must be created first when developing a simulation.
+
+    Once it has been created it is passed to the creation of any other
+    object upon which it will automatically update itself.
+
+    Once the simulation has been fully defined it is passed to the
+    SPDmodel instance which draws all of the necessary variables
+    and values. These are taken and a Linear Program created which
+    is solved.
+
+    Usage:
+    ------
+    operator = SystemOperator()
+
+    """
     def __init__(self):
         super(SystemOperator, self).__init__()
         self._create_empty_variables()
 
 
     def create_iterator(self, actor=None, variable='reserve_price', varrange=np.arange(0,5)):
-        """ Take the actor and update all of the variable names
+        """ Create a range of duplicate scenarios which are all solved
+        at once to assess the benefits of a particular strategy over
+        a particular run.
+
+        This is a user exposed function and must be called whenever a
+        run is being created.
+
+        Parameters
+        ----------
+        actor: Node, Station, InterruptibleLoad
+            An object which is to be modified when solving the linear program
+        variable: str
+            The name of the variable to be modified, e.g. 'reserve_price'
+        varrange: iterable
+            An iterable of ints or floats which consist of the new values
+            for the variable in each instance
 
         """
 
@@ -31,21 +65,27 @@ class SystemOperator(object):
                 itname = ''.join([variable, str(value)])
                 self.itinstances.append(itname)
                 actor.__dict__[variable] = value
-                self.add_dispatch(itname)
+                self._add_dispatch(itname)
 
         else:
             # Do a single dispatch
             itname="Single"
             self.itinstances.append(itname)
 
-            self.add_dispatch(itname)
+            self._add_dispatch(itname)
 
         return self
 
 
 
-    def add_dispatch(self, itname):
-        """ Get the dispatch, apply the iterator name to each one
+    def _add_dispatch(self, itname):
+        """ Convenience wrapper, calls each of the parameter functons
+        Acts as a hidden API.
+
+        Parameters
+        ----------
+        itname: str
+            The iterable name to be applied
         """
 
         self._station_parameters(itname)
@@ -56,6 +96,11 @@ class SystemOperator(object):
 
 
     def _station_parameters(self, itname):
+        """ Hidden function will create a number of lists and dictionaries
+        containing information about the Linear Program to be passed
+        to the model.
+
+        """
         for station in self.stations:
             name = '_'.join([itname, station.name])
             self.energy_station_names.append(name)
@@ -73,6 +118,11 @@ class SystemOperator(object):
 
 
     def _interruptible_load_parameters(self, itname):
+        """ Hidden function will create a number of lists and dictionaries
+        containing information about the Linear Program to be passed
+        to the model.
+
+        """
         for IL in self.interruptible_loads:
             name = '_'.join([itname, IL.name])
             self.reserve_IL_names.append(name)
@@ -85,6 +135,11 @@ class SystemOperator(object):
 
 
     def _node_parameters(self, itname):
+        """ Hidden function will create a number of lists and dictionaries
+        containing information about the Linear Program to be passed
+        to the model.
+
+        """
         for node in self.nodes:
             name = '_'.join([itname, node.name])
             self.node_names.append(name)
@@ -97,6 +152,11 @@ class SystemOperator(object):
 
 
     def _transmission_parameters(self, itname):
+        """ Hidden function will create a number of lists and dictionaries
+        containing information about the Linear Program to be passed
+        to the model.
+
+        """
         for branch in self.branches:
             name = '_'.join([itname, branch.name])
             sn_name = '_'.join([itname, branch.sending_node.name])
@@ -126,6 +186,11 @@ class SystemOperator(object):
 
 
     def _rezerve_zone_parameters(self, itname):
+        """ Hidden function will create a number of lists and dictionaries
+        containing information about the Linear Program to be passed
+        to the model.
+
+        """
         for rz in self.reserve_zones:
             name = '_'.join([itname, rz.name])
 
@@ -143,6 +208,10 @@ class SystemOperator(object):
 
 
     def _create_empty_variables(self):
+        """ Initialises a number of empty lists and dictionaries
+        which are used in setting up the linear program
+
+        """
         self.stations = []
         self.station_names = []
         self.station_map = {}
@@ -188,23 +257,28 @@ class SystemOperator(object):
         return self
 
     def _add_station(self, Station):
-        """ Add a Station """
+        """ Adds a station automatically to the System Operator """
         self.stations.append(Station)
         return self
 
     def _add_node(self, Node):
+        """ Adds a node automatically to the System Operator"""
         self.nodes.append(Node)
         return self
 
     def _add_reserve_zone(self, RZ):
+        """ Adds a Reserve Zone automatically to the System Operator """
         self.reserve_zones.append(RZ)
         return self
 
     def _add_interruptible_load(self, IL):
+        """ Adds a Interruptible Load participant to the System Operator """
+
         self.interruptible_loads.append(IL)
         return self
 
     def _add_branch(self, Branch):
+        """ Adds a Branch to the Systen Operator """
         self.branches.append(Branch)
         return self
 
@@ -214,7 +288,13 @@ class SystemOperator(object):
 
 
 class Company(object):
-    """docstring for Company"""
+    """Company
+
+    A container around a number of Stations and Interruptible Load which
+    can be used to determine the aggregate position for a particular company.
+    This is useful when determining profits and losses from a particular
+    solution ot the model and should speed up the iteration process.
+    """
     def __init__(self, name):
         super(Company, self).__init__()
         self.name = name
@@ -224,16 +304,53 @@ class Company(object):
 
 
     def _add_station(self, Station):
+        """ Automatically add a station to the Company.
+        Is called when a Station is created.
+
+        Parameters
+        ----------
+        Station: Station
+            The station object to be added
+
+        """
         self.stations.append(Station)
         return self
 
     def _add_interruptible_load(self, IL):
+        """ Automatically add an interruptible load to the Company.
+        Is called when an interruptible load object is created
+
+        Parameters
+        ----------
+        IL: InterruptibleLoad
+            The interruptible load object to be added
+
+        """
         self.interruptible_loads.append(IL)
         return self
 
 
 class Node(object):
-    """docstring for Node"""
+    """Node
+
+    A nodal location within the current system.
+    Is part of a reserve zone and acts as a location for demand, generation
+    and reserve. Has a number of automatic methods which are called whenever
+    a new object is created at the node in question to handle the book
+    keeping operations.
+
+    Parameters
+    ----------
+    name: str
+        A unique name for the Node
+    SO: SystemOperator
+        The system opeartor object
+    RZ: ReserveZone
+        What reserve zone the node is a part of
+    demand: int, float, default 0
+        The nodal demand at the node
+
+    """
     def __init__(self, name, SO, RZ, demand=0):
         super(Node, self).__init__()
         self.name = name
@@ -251,18 +368,48 @@ class Node(object):
 
 
     def _add_station(self, Station):
+        """ Automatically add a station to both the Node and the Reserve Zone
+
+        Parameters
+        ----------
+        Station: Station
+            The station object to be added
+
+        """
         self.stations.append(Station)
         self.RZ._add_station(Station)
         return self
 
     def _add_interruptible_load(self, IL):
+        """ Automatically add an interruptible load to the Node and
+            Reserve Zone.
+
+        Parameters
+        ----------
+        IL: InterruptibleLoad
+            The interruptible load object to be added
+        """
         self.interruptible_loads.append(IL)
         self.RZ._add_intload(IL)
         return self
 
 
 class ReserveZone(object):
-    """docstring for ReserveZone"""
+    """ReserveZone
+
+    A Reserve Zone is a collection of nodes which have a separate "risk" which
+    must be secured against by dispatching reserve from the nodes within the
+    zone. Reserve procured from other zones cannot currently be utilised
+    to secure a risk in a separate zone
+
+    Parameters
+    ----------
+    name: str
+        Unique name for the Reserve Zone
+    SO: SystemOperator
+        The System Operator object for the dispatch
+
+    """
     def __init__(self, name, SO):
         super(ReserveZone, self).__init__()
         self.name = name
@@ -276,20 +423,67 @@ class ReserveZone(object):
 
 
     def _add_node(self, Node):
+        """ Adds a node automatically to the Reserve Zone.
+        Is called automatically whenever a new node is created
+
+        Parameters
+        ----------
+        Node: Node
+            The node to be added to the reserve zone
+        """
         self.nodes.append(Node)
         return self
 
     def _add_station(self, Station):
+        """ Adds a station automatically to the Reserve Zone.
+        Is called automatically when a new station is created
+
+        Parameters
+        ----------
+        Station: Station
+            The station to be added to the reserve zone
+
+        """
         self.stations.append(Station)
         return self
 
     def _add_intload(self, IL):
+        """ Adds an interruptible load provider to the Rezerve Zone
+        Is called automatically when a new station is created
+
+        Parameters
+        ----------
+        IL: InterruptibleLoad
+            The interruptible load object to be added to the reserve zone.
+
+        """
         self.interruptible_loads.append(IL)
         return self
 
 
 class Station(object):
-    """docstring for Station"""
+    """Station
+
+    A generation station for use in the SPD model.
+    Is a container around the core functionality that can be called
+    automatically by the operator to provide its offers.
+    Ideally is a self contained agent that communicates with the SystemOperator
+
+    Parameters
+    ----------
+    name: str
+        Unique name for the Generation Station
+    SO: SystemOperator
+        Operator object for the situation
+    Node: Node
+        Location of the generation station
+    Company: Company
+        Owner of the generation station for determining total revenue etc
+    capacity: int, float, default 0
+        Total generation capacity of the station
+
+    """
+
     def __init__(self, name, SO, Node, Company, capacity=0):
         super(Station, self).__init__()
         self.name = name
@@ -306,13 +500,34 @@ class Station(object):
 
 
     def add_energy_offer(self, price, offer):
+        """ Adds an Energy Offer to the station
+
+        Parameters
+        ----------
+        price: int, float
+            The price of the Energy Offer
+        offer: int, float
+            Offer component of the Energy Offer
+
+        """
         self.energy_price = price
         self.energy_offer = offer
         return self
 
 
     def add_reserve_offer(self, price, offer, proportion):
+        """ Adds a Reserve Offer to the Station
 
+        Parameters
+        ----------
+        price: int, float
+            The price of the Reserve Offer
+        offer: int, float
+            Offer component of the Reserve Offer
+        proportion: float
+            Proportion component of the Reserve Offer
+
+        """
         self.reserve_price = price
         self.reserve_offer = offer
         self.reserve_proportion = proportion
@@ -320,8 +535,29 @@ class Station(object):
 
 
 class InterruptibleLoad(object):
-    """docstring for InterruptibleLoad"""
+    """InterruptibleLoad
+
+    Container for an Interruptible Load participant within the market.
+    This participant acts as a non-generator source of reserve for
+    supporting a higher level of risk in the market.
+
+    Currently set up by passing a unique name to the object.
+
+    Parameters
+    ----------
+    name: str
+        The unique name to be applied to the Interruptible Load object
+    SO: SystemOperator
+        The System Operator object
+    Node: Node
+        The location of the source of interruptible load
+    Company: Company
+        Who controls the Interruptible Load object, used when determining
+        profits or losses
+
+    """
     def __init__(self, name, SO, Node, Company):
+        """ Initialise the interruptible load object"""
         super(InterruptibleLoad, self).__init__()
         self.name = name
         self.node = Node
@@ -334,6 +570,16 @@ class InterruptibleLoad(object):
 
 
     def add_reserve_offer(self, price, offer):
+        """ Add a Reserve Offer to the object consisting of a price and offer
+
+        Parameters
+        ----------
+        price: int, float
+            The price of the offer
+        offer: int, float
+            The quantity of the offer
+
+        """
 
         self.reserve_price = price
         self.reserve_offer = offer
@@ -341,7 +587,30 @@ class InterruptibleLoad(object):
 
 
 class Branch(object):
-    """docstring for Branch"""
+    """Branch
+
+    A Branch is a connection point between any two nodes and specifies
+    the capacity between the nodes.
+    A branch may be a risk setting object, if the risk flag is set to True
+    If this is the case then the current implementation of the model requires
+    the sending and receiving node to be in different Reserve Zones.
+
+    To initiate a Branch object a minimum of three items must be passed.
+
+    Parameters
+    ----------
+    SO: SystemOperator
+        The System Operator object for the current solution run
+    sending_node: Node
+        The node which is specified as the sending node for the model dispatch
+    receiving_node: Node
+        The receiving node for the model dispatch
+    capacity: int, float, default 0
+        The capacity of the branch
+    risk: bool, default False
+        Flag to treat the branch as a risk setting object.
+
+    """
     def __init__(self, SO, sending_node, receiving_node, capacity=0, risk=False):
         super(Branch, self).__init__()
 
