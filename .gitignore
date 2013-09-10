@@ -44,3 +44,5 @@ docs/_build
 
 test_script44.py
 
+*.sublime-project
+*.sublime-workspace
