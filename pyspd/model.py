@@ -10,27 +10,33 @@ import pulp
 import time
 
 class SPDModel(object):
-    """docstring for SPDModel"""
+    """SPDModel
+
+    Container for setting up, solving, and organising the results
+    of a Simulation. Contains three primary API methods.
+    Creation of the Linear Program, solving the LP and parsing the results.
+
+    Usage:
+    ------
+    solver = SPDModel(SystemOperator)
+    solver.create_lp()
+    solver.solve_lp()
+    solver.parse_result()
+
+    """
     def __init__(self, ISO):
         super(SPDModel, self).__init__()
 
         self.ISO = ISO
 
-    def setup_lp(self):
-        """ Setup a Linear Program from a defined ISO instance """
-
-        # Set up a Linear Program
-
-        self.lp = pulp.LpProblem("SPD Dispatch", pulp.LpMinimize)
-
-        self.addC = self.lp.addConstraint
-        self.SUM = pulp.lpSum
-        self.lpDict = pulp.LpVariable.dicts
-
-        return self
-
     def create_lp(self):
-        self.setup_lp()
+        """ Publically exposed API
+        Creates the Linear program including applying the objective
+        function and adding all of the necessary constraints.
+        This exists as a wrapper around a number of hidden functions.
+
+        """
+        self._setup_lp()
         self._create_variables()
         self._obj_function()
         self._nodal_demand()
@@ -42,6 +48,47 @@ class SPDModel(object):
         self._generator_risk()
         self._transmission_risk()
         self._reserve_dispatch()
+
+    def write_lp(self, fName=None):
+        """ Write the Linear Program to a file """
+        self.lp.writeLP(fName)
+
+    def solve_lp(self):
+        """ Solve the Linear Program including the time taken to solve it """
+        begin = time.time()
+        self.lp.solve()
+        self.solution_time = time.time() - begin
+
+    def parse_result(self):
+        """ Publically exposed API
+        Parse the Results of the solved Linear Program.
+        Must be called after solving it.
+
+        """
+        self._parse_risk()
+        self._parse_energy_prices()
+        self._parse_reserve_prices()
+        self._parse_branch_flow()
+        self._parse_reserve_dispatch()
+        self._parse_energy_dispatch()
+
+    def _setup_lp(self):
+        """ Setup a Linear Program from a defined ISO instance
+        Contains several convenience mappings to shorten line lengths
+
+        """
+
+        # Set up a Linear Program
+
+        self.lp = pulp.LpProblem("SPD Dispatch", pulp.LpMinimize)
+
+        self.addC = self.lp.addConstraint
+        self.SUM = pulp.lpSum
+        self.lpDict = pulp.LpVariable.dicts
+
+        return self
+
+
 
 
     def _create_variables(self):
@@ -57,7 +104,6 @@ class SPDModel(object):
         nodal_injection
         reserve_zone_risk
         """
-
 
         self.energy_offers = self.lpDict("Energy_Total",
                         self.ISO.energy_station_names, 0)
@@ -76,7 +122,10 @@ class SPDModel(object):
 
 
     def _obj_function(self):
-        """ Apply the objective function """
+        """ Objective Function
+
+        min \sum_i p_{g,i}g_{i} + \sum_j p_{r,j}r_{j}
+        """
 
         # Unpack the necessary variables
         eoffers = self.energy_offers
@@ -93,7 +142,13 @@ class SPDModel(object):
 
 
     def _nodal_demand(self):
-        """ Apply the nodal demand constraints """
+        """ Nodal Demand constraints
+
+        Injection_{n} = \sum_{j} g_{j(n)} - d_{n}
+
+        Injection_{n} = \sum_{t} f_{t(n)} * d_{t(n)}
+
+        """
         # Unpack variables
 
         node_inj = self.nodal_injection
@@ -118,7 +173,11 @@ class SPDModel(object):
             self.addC(node_inj[node] == self.SUM([branch_flow[t] * flow_dir[t] for t in flow_map[node]]),n2)
 
     def _energy_offers(self):
-        """ Constrain the Energy offers """
+        """Energy offer constraints
+
+        g_{i} \le g_{max, i}
+
+        """
         # Unpack variables
         eoffers = self.energy_offers
         enames = self.ISO.energy_station_names
@@ -130,6 +189,11 @@ class SPDModel(object):
 
 
     def _reserve_offers(self):
+        """ Reserve Offer constraints
+
+        r_{j} \le r_{max, j}
+
+        """
         # Unpack variables
         roffers = self.reserve_offers
         rnames = self.ISO.reserve_station_names
@@ -140,6 +204,14 @@ class SPDModel(object):
             self.addC(roffers[i] <= rcapacity[i], name)
 
     def _transmission_offer(self):
+        """ Transmission Offer constraints
+
+        f_{t} \le f_{max, t}
+
+        f_{t} \ge -f_{max, t}
+
+        """
+
 
         bflows = self.branch_flow
         bnames = self.ISO.branch_names
@@ -154,6 +226,11 @@ class SPDModel(object):
 
 
     def _reserve_proportion(self):
+        """ Reserve Proportion Constraints
+
+        r_{i} \le k_{i}g_{i}
+
+        """
 
         # Unpack Variables
 
@@ -167,6 +244,11 @@ class SPDModel(object):
             self.addC(roffers[i] <= rprop[i] * eoffers[i], name)
 
     def _reserve_combined(self):
+        """ Reserve total capacity constraints
+
+        r_{i} + g_{i} \le g_{capacity, i}
+
+        """
         spin_stations = self.ISO.reserve_spinning_stations
         roffers = self.reserve_offers
         eoffers = self.energy_offers
@@ -177,6 +259,11 @@ class SPDModel(object):
             self.addC(roffers[i] + eoffers[i] <= tot_capacity[i], name)
 
     def _generator_risk(self):
+        """ Risk for generators
+
+        Risk_{r} \ge g_{i(r)}
+
+        """
 
         rzones = self.ISO.reserve_zone_names
         rzone_risk = self.reserve_zone_risk
@@ -191,6 +278,11 @@ class SPDModel(object):
 
 
     def _transmission_risk(self):
+        """ Risk for a Transmission line
+
+        Risk_{r} \ge f_{t(r)} * d_{t(r)}
+
+        """
 
         rzones = self.ISO.reserve_zone_names
         rzone_risk = self.reserve_zone_risk
@@ -205,6 +297,11 @@ class SPDModel(object):
                 self.addC(rzone_risk[i] >= bflow[j] * bflow_dir[j], name)
 
     def _reserve_dispatch(self):
+        """ Total Reserve Dispatch
+
+        \sum_{j(r)} r_{j} \ge Risk_{r}
+
+        """
 
         rzones = self.ISO.reserve_zone_names
         rzone_risk = self.reserve_zone_risk
@@ -217,49 +314,38 @@ class SPDModel(object):
             self.addC(self.SUM([roffer[j] for j in rzone_stations[i]]) >= rzone_risk[i], name)
 
 
-    def write_lp(self, fName=None):
-        self.lp.writeLP(fName)
-
-    def solve_lp(self):
-        begin = time.time()
-        self.lp.solve()
-        self.solution_time = time.time() - begin
-
-    def parse_result(self):
-
-        self._parse_risk()
-        self._parse_energy_prices()
-        self._parse_reserve_prices()
-        self._parse_branch_flow()
-        self._parse_reserve_dispatch()
-        self._parse_energy_dispatch()
-
-
     def _parse_energy_prices(self):
         """ Parse The Energy Prices """
         self.final_energy_prices = self._condict("Energy_Price")
 
     def _parse_reserve_prices(self):
+        """ Parse the Reserve Prices """
         self.final_reserve_prices = self._condict("Reserve_Price")
 
     def _parse_energy_dispatch(self):
+        """ Parse the Energy Dispatch """
         self.final_energy_dispatch = self._vardict("Energy_Total")
 
     def _parse_reserve_dispatch(self):
+        """ Parse the Reserve Dispatch """
         self.final_reserve_dispatch = self._vardict('Reserve_Total')
 
     def _parse_branch_flow(self):
+        """ Parse the Branch Flows """
         self.final_branch_flow = self._vardict('Transmission_Total')
 
     def _parse_risk(self):
+        """ Parse the Risk parameters """
         self.final_risk_requirements = self._vardict("Reserve_Risk")
 
 
     def _vardict(self, condition):
+        """ Generic method for extracting values from variables """
         return {n: n.varValue for n in self.lp.variables()
                         if condition in n.name}
 
     def _condict(self, condition):
+        """ Generic method for extracting values from constraints """
         return {n: self.lp.constraints[n].pi
                     for n in self.lp.constraints if condition in n}
 
