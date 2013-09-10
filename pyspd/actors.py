@@ -262,7 +262,21 @@ class Node(object):
 
 
 class ReserveZone(object):
-    """docstring for ReserveZone"""
+    """ReserveZone
+
+    A Reserve Zone is a collection of nodes which have a separate "risk" which
+    must be secured against by dispatching reserve from the nodes within the
+    zone. Reserve procured from other zones cannot currently be utilised
+    to secure a risk in a separate zone
+
+    Parameters
+    ----------
+    name: str
+        Unique name for the Reserve Zone
+    SO: SystemOperator
+        The System Operator object for the dispatch
+
+    """
     def __init__(self, name, SO):
         super(ReserveZone, self).__init__()
         self.name = name
@@ -276,14 +290,40 @@ class ReserveZone(object):
 
 
     def _add_node(self, Node):
+        """ Adds a node automatically to the Reserve Zone.
+        Is called automatically whenever a new node is created
+
+        Parameters
+        ----------
+        Node: Node
+            The node to be added to the reserve zone
+        """
         self.nodes.append(Node)
         return self
 
     def _add_station(self, Station):
+        """ Adds a station automatically to the Reserve Zone.
+        Is called automatically when a new station is created
+
+        Parameters
+        ----------
+        Station: Station
+            The station to be added to the reserve zone
+
+        """
         self.stations.append(Station)
         return self
 
     def _add_intload(self, IL):
+        """ Adds an interruptible load provider to the Rezerve Zone
+        Is called automatically when a new station is created
+
+        Parameters
+        ----------
+        IL: InterruptibleLoad
+            The interruptible load object to be added to the reserve zone.
+
+        """
         self.interruptible_loads.append(IL)
         return self
 
