@@ -14,4 +14,4 @@ from actors import (SystemOperator,
                     Branch,
                     InterruptibleLoad)
 
-from model import SPDmodel
+from model import SPDModel
