@@ -214,7 +214,13 @@ class SystemOperator(object):
 
 
 class Company(object):
-    """docstring for Company"""
+    """Company
+
+    A container around a number of Stations and Interruptible Load which
+    can be used to determine the aggregate position for a particular company.
+    This is useful when determining profits and losses from a particular
+    solution ot the model and should speed up the iteration process.
+    """
     def __init__(self, name):
         super(Company, self).__init__()
         self.name = name
@@ -224,10 +230,28 @@ class Company(object):
 
 
     def _add_station(self, Station):
+        """ Automatically add a station to the Company.
+        Is called when a Station is created.
+
+        Parameters
+        ----------
+        Station: Station
+            The station object to be added
+
+        """
         self.stations.append(Station)
         return self
 
     def _add_interruptible_load(self, IL):
+        """ Automatically add an interruptible load to the Company.
+        Is called when an interruptible load object is created
+
+        Parameters
+        ----------
+        IL: InterruptibleLoad
+            The interruptible load object to be added
+
+        """
         self.interruptible_loads.append(IL)
         return self
 
