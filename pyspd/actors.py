@@ -233,7 +233,26 @@ class Company(object):
 
 
 class Node(object):
-    """docstring for Node"""
+    """Node
+
+    A nodal location within the current system.
+    Is part of a reserve zone and acts as a location for demand, generation
+    and reserve. Has a number of automatic methods which are called whenever
+    a new object is created at the node in question to handle the book
+    keeping operations.
+
+    Parameters
+    ----------
+    name: str
+        A unique name for the Node
+    SO: SystemOperator
+        The system opeartor object
+    RZ: ReserveZone
+        What reserve zone the node is a part of
+    demand: int, float, default 0
+        The nodal demand at the node
+
+    """
     def __init__(self, name, SO, RZ, demand=0):
         super(Node, self).__init__()
         self.name = name
@@ -251,11 +270,27 @@ class Node(object):
 
 
     def _add_station(self, Station):
+        """ Automatically add a station to both the Node and the Reserve Zone
+
+        Parameters
+        ----------
+        Station: Station
+            The station object to be added
+
+        """
         self.stations.append(Station)
         self.RZ._add_station(Station)
         return self
 
     def _add_interruptible_load(self, IL):
+        """ Automatically add an interruptible load to the Node and
+            Reserve Zone.
+
+        Parameters
+        ----------
+        IL: InterruptibleLoad
+            The interruptible load object to be added
+        """
         self.interruptible_loads.append(IL)
         self.RZ._add_intload(IL)
         return self
