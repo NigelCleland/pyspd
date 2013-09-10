@@ -289,7 +289,28 @@ class ReserveZone(object):
 
 
 class Station(object):
-    """docstring for Station"""
+    """Station
+
+    A generation station for use in the SPD model.
+    Is a container around the core functionality that can be called
+    automatically by the operator to provide its offers.
+    Ideally is a self contained agent that communicates with the SystemOperator
+
+    Parameters
+    ----------
+    name: str
+        Unique name for the Generation Station
+    SO: SystemOperator
+        Operator object for the situation
+    Node: Node
+        Location of the generation station
+    Company: Company
+        Owner of the generation station for determining total revenue etc
+    capacity: int, float, default 0
+        Total generation capacity of the station
+
+    """
+
     def __init__(self, name, SO, Node, Company, capacity=0):
         super(Station, self).__init__()
         self.name = name
@@ -306,13 +327,34 @@ class Station(object):
 
 
     def add_energy_offer(self, price, offer):
+        """ Adds an Energy Offer to the station
+
+        Parameters
+        ----------
+        price: int, float
+            The price of the Energy Offer
+        offer: int, float
+            Offer component of the Energy Offer
+
+        """
         self.energy_price = price
         self.energy_offer = offer
         return self
 
 
     def add_reserve_offer(self, price, offer, proportion):
+        """ Adds a Reserve Offer to the Station
 
+        Parameters
+        ----------
+        price: int, float
+            The price of the Reserve Offer
+        offer: int, float
+            Offer component of the Reserve Offer
+        proportion: float
+            Proportion component of the Reserve Offer
+
+        """
         self.reserve_price = price
         self.reserve_offer = offer
         self.reserve_proportion = proportion
