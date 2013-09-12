@@ -159,6 +159,9 @@ class SPDModel(object):
         energy_offer = self.energy_offers
         branch_flow = self.branch_flow
 
+        # Introduce a perturbation to ensure the duals work
+        perturb = 0.00000001
+
         for node in node_names:
             n1 = '_'.join([node, 'Energy_Price'])
             n2 = '_'.join([node, 'Nodal_Transmission'])
@@ -166,7 +169,7 @@ class SPDModel(object):
             # Net Injections from Energy and Demand
             self.addC(node_inj[node] == self.SUM([energy_offer[i]
                                                  for i in nodal_stations[node]]
-                                                 ) - nodal_demand[node], n1)
+                                                 ) - nodal_demand[node] + perturb, n1)
 
             # Net Injection from transmission
             self.addC(node_inj[node] == self.SUM([branch_flow[t] *
@@ -183,9 +186,12 @@ class SPDModel(object):
         enames = self.ISO.energy_station_names
         ecapacity = self.ISO.energy_station_capacity
 
+        # Introduce a perturbation to ensure the duals work
+        perturb = 0.00000001
+
         for i in enames:
             name = '_'.join([i, 'Total_Energy'])
-            self.addC(eoffers[i] <= ecapacity[i], name)
+            self.addC(eoffers[i] <= ecapacity[i] + perturb, name)
 
     def _reserve_offers(self):
         """ Reserve Offer constraints
@@ -198,9 +204,12 @@ class SPDModel(object):
         rnames = self.ISO.reserve_station_names
         rcapacity = self.ISO.reserve_station_capacity
 
+        # Introduce a perturbation to ensure the duals work
+        perturb = 0.00000001
+
         for i in rnames:
             name = '_'.join([i, "Total_Reserve"])
-            self.addC(roffers[i] <= rcapacity[i], name)
+            self.addC(roffers[i] <= rcapacity[i] + perturb, name)
 
     def _transmission_offer(self):
         """ Transmission Offer constraints
@@ -268,10 +277,13 @@ class SPDModel(object):
         rzone_stations = self.ISO.reserve_zone_generators
         eoffers = self.energy_offers
 
+        # Introduce a perturbation to ensure the duals work
+        perturb = 0.00000001
+
         for i in rzones:
             for j in rzone_stations[i]:
                 name = '_'.join([i, j, 'Generator_Risk'])
-                self.addC(rzone_risk[i] >= eoffers[j], name)
+                self.addC(rzone_risk[i] >= eoffers[j] + perturb, name)
 
     def _transmission_risk(self):
         """ Risk for a Transmission line
@@ -287,10 +299,13 @@ class SPDModel(object):
         bflow_dir = self.ISO.reserve_zone_flow_direction
         bflow_map = self.ISO.reserve_zone_flow_map
 
+        # Introduce a perturbation to ensure the duals work
+        perturb = 0.00000001
+
         for i in rzones:
             for j in bflow_map[i]:
                 name = '_'.join([i, j, "Transmission_Risk"])
-                self.addC(rzone_risk[i] >= bflow[j] * bflow_dir[i][j], name)
+                self.addC(rzone_risk[i] >= bflow[j] * bflow_dir[i][j] + perturb, name)
 
     def _reserve_dispatch(self):
         """ Total Reserve Dispatch
@@ -305,15 +320,19 @@ class SPDModel(object):
         rzone_stations = self.ISO.reserve_zone_reserve
         roffer = self.reserve_offers
 
+        # Introduce a perturbation to ensure the duals work
+        perturb = 0.00000001
+
         for i in rzones:
             name = '_'.join([i, 'Reserve_Price'])
             self.addC(self.SUM([roffer[j]
                                for j in rzone_stations[i]]
-                               ) >= rzone_risk[i], name)
+                               ) - rzone_risk[i] >= perturb, name)
 
     def _parse_energy_prices(self):
         """ Parse The Energy Prices """
-        self.final_energy_prices = self._condict("Energy_Price")
+        neg_prices = self._condict("Energy_Price")
+        self.final_energy_prices = {k: v*-1 for k, v in neg_prices.iteritems()}
 
     def _parse_reserve_prices(self):
         """ Parse the Reserve Prices """

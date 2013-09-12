@@ -174,8 +174,8 @@ class SystemOperator(object):
                     self.reserve_zone_flow_map[sn_rz_name].append(name)
                     self.reserve_zone_flow_map[rn_rz_name].append(name)
 
-                    self.reserve_zone_flow_direction[sn_rz_name][name] = 1
-                    self.reserve_zone_flow_direction[rn_rz_name][name] = -1
+                    self.reserve_zone_flow_direction[sn_rz_name][name] = -1
+                    self.reserve_zone_flow_direction[rn_rz_name][name] = 1
 
     def _rezerve_zone_parameters(self, itname):
         """ Hidden function will create a number of lists and dictionaries
