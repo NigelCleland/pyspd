@@ -54,10 +54,10 @@ class SPDModel(object):
         """ Write the Linear Program to a file """
         self.lp.writeLP(fName)
 
-    def solve_lp(self):
+    def solve_lp(self, solver=pulp.COIN_CMD()):
         """ Solve the Linear Program including the time taken to solve it """
         begin = time.time()
-        self.lp.solve()
+        self.lp.solve(solver)
         self.solution_time = time.time() - begin
 
     def parse_result(self):
