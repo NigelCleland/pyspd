@@ -290,7 +290,7 @@ class SPDModel(object):
         for i in rzones:
             for j in bflow_map[i]:
                 name = '_'.join([i, j, "Transmission_Risk"])
-                self.addC(rzone_risk[i] >= bflow[j] * bflow_dir[j], name)
+                self.addC(rzone_risk[i] >= bflow[j] * bflow_dir[i][j], name)
 
     def _reserve_dispatch(self):
         """ Total Reserve Dispatch
