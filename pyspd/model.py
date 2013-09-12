@@ -169,8 +169,8 @@ class SPDModel(object):
                                                  ) - nodal_demand[node], n1)
 
             # Net Injection from transmission
-            self.addC(node_inj[node] == self.SUM([branch_flow[t] * flow_dir[t]
-                                                 for t in flow_map[node]]), n2)
+            self.addC(node_inj[node] == self.SUM([branch_flow[t] *
+                    flow_dir[node][t] for t in flow_map[node]]), n2)
 
     def _energy_offers(self):
         """Energy offer constraints
