@@ -82,6 +82,20 @@ class SPDModel(object):
         pass
 
 
+    def _parse_key(self, key):
+        """ Function to Parse the key and return the result as a dictionary
+        for indexing.
+        """
+
+        tup = key.split('_')
+        keydict = {'iter-actor': tup[0],
+                   'iter-actor-var': '_'.join(tup[1:3]),
+                   'var-value': tup[3],
+                   'result-actor': tup[4],
+                   'variable': '_'.join(tup[-2:])
+                    }
+        return keydict
+
     def _setup_lp(self):
         """ Setup a Linear Program from a defined ISO instance
         Contains several convenience mappings to shorten line lengths
