@@ -89,17 +89,20 @@ class SPDModel(object):
             ind_key = '_'.join([keydict['iter-actor'], keydict['iter-actor-var']])
 
             name = '_'.join([keydict['result-actor'], keydict['variable']])
-            sample_dict[name][keydict['var-value']] = value
+            sample_dict[name][keydict['var-value']] = int(value)
 
         for key, value in self.final_reserve_prices.iteritems():
             keydict = self._parse_constraint_key(key)
             ind_key = '_'.join([keydict['iter-actor'], keydict['iter-actor-var']])
 
             name = '_'.join([keydict['result-actor'], keydict['variable']])
-            sample_dict[name][keydict['var-value']] = value
+            sample_dict[name][keydict['var-value']] = int(value)
 
         df = pd.DataFrame(sample_dict)
         df.index.name = ind_key
+        df.index = df.index.astype(int)
+        df.sort_index(inplace=True)
+
         return df
 
     def _parse_variable_key(self, key):
