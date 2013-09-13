@@ -8,7 +8,10 @@ Overall Model for the linear program.
 
 import pulp
 import time
+from collections import defaultdict
 
+# C Libraries
+import pandas as pd
 
 class SPDModel(object):
     """SPDModel
@@ -78,8 +81,26 @@ class SPDModel(object):
 
         """
 
+        sample_dict = defaultdict(dict)
         # Iterate through the
-        pass
+
+        for key, value in self.final_energy_prices.iteritems():
+            keydict = self._parse_constraint_key(key)
+            ind_key = '_'.join([keydict['iter-actor'], keydict['iter-actor-var']])
+
+            name = '_'.join([keydict['result-actor'], keydict['variable']])
+            sample_dict[name][keydict['var-value']] = value
+
+        for key, value in self.final_reserve_prices.iteritems():
+            keydict = self._parse_constraint_key(key)
+            ind_key = '_'.join([keydict['iter-actor'], keydict['iter-actor-var']])
+
+            name = '_'.join([keydict['result-actor'], keydict['variable']])
+            sample_dict[name][keydict['var-value']] = value
+
+        df = pd.DataFrame(sample_dict)
+        df.index.name = ind_key
+        return df
 
     def _parse_variable_key(self, key):
         """ Function to Parse the key and return the result as a dictionary
