@@ -81,8 +81,22 @@ class SPDModel(object):
         # Iterate through the
         pass
 
+    def _parse_variable_key(self, key):
+        """ Function to Parse the key and return the result as a dictionary
+        for indexing.
+        """
 
-    def _parse_key(self, key):
+        tup = key.split('_')
+        keydict = {'iter-actor': tup[2],
+                   'iter-actor-var': '_'.join(tup[3:5]),
+                   'var-value': tup[5],
+                   'result-actor': tup[6],
+                   'variable': '_'.join(tup[:2])
+                    }
+        return keydict
+
+
+    def _parse_constraint_key(self, key):
         """ Function to Parse the key and return the result as a dictionary
         for indexing.
         """
