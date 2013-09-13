@@ -33,6 +33,14 @@ class SPDModel(object):
 
         self.ISO = ISO
 
+    def full_run(self):
+        """ Convenience function to compile a full run """
+        self.create_lp()
+        self.solve_lp(pulp.PULP_CBC_CMD())
+        self.parse_result()
+        self.create_price_df()
+        self.create_dispatch_df()
+
     def create_lp(self):
         """ Publically exposed API
         Creates the Linear program including applying the objective
@@ -75,6 +83,10 @@ class SPDModel(object):
         self._parse_branch_flow()
         self._parse_reserve_dispatch()
         self._parse_energy_dispatch()
+
+    def create_dispatch_df(self):
+
+        pass
 
     def create_price_df(self):
         """
