@@ -73,6 +73,15 @@ class SPDModel(object):
         self._parse_reserve_dispatch()
         self._parse_energy_dispatch()
 
+    def create_price_df(self):
+        """
+
+        """
+
+        # Iterate through the
+        pass
+
+
     def _setup_lp(self):
         """ Setup a Linear Program from a defined ISO instance
         Contains several convenience mappings to shorten line lengths

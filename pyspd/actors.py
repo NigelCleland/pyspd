@@ -62,7 +62,7 @@ class SystemOperator(object):
 
         if actor:
             for value in varrange:
-                itname = ''.join([variable, str(value)])
+                itname = '_'.join([actor.name, variable, str(value)])
                 self.itinstances.append(itname)
                 actor.__dict__[variable] = value
                 self._add_dispatch(itname)
