@@ -103,7 +103,7 @@ class SPDModel(object):
         df.index = df.index.astype(int)
         df.sort_index(inplace=True)
 
-        return df
+        self.final_price_df = df
 
     def _parse_variable_key(self, key):
         """ Function to Parse the key and return the result as a dictionary
