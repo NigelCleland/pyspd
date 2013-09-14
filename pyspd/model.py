@@ -89,29 +89,46 @@ class SPDModel(object):
         pass
 
     def create_price_df(self):
-        """
+        """ Create a DataFrame of Energy and Reserve Prices
+        Based upon the solution to the dispatch and the different
+        instances passed. Apply an index to sort by the changing variable
+        in question.
+
+        Parameters
+        ----------
+        self.final_energy_prices: dict
+            Dictionary of the final energy prices
+        self.final_reserve_prices: dict
+            Dictionary of the final reserve prices
+
+        Returns
+        -------
+        self.final_price_df: DataFrame
+            DataFrame of the final energy and reserve prices sorted by
+            the actor variable as the index
 
         """
 
         sample_dict = defaultdict(dict)
-        # Iterate through the
 
         for key, value in self.final_energy_prices.iteritems():
             keydict = self._parse_constraint_key(key)
-            ind_key = '_'.join([keydict['iter-actor'], keydict['iter-actor-var']])
+            ind_key = ' '.join([keydict['iter-actor'],
+                                keydict['iter-actor-var']])
 
-            name = '_'.join([keydict['result-actor'], keydict['variable']])
+            name = ' '.join([keydict['result-actor'], keydict['variable']])
             sample_dict[name][keydict['var-value']] = int(value)
 
         for key, value in self.final_reserve_prices.iteritems():
             keydict = self._parse_constraint_key(key)
-            ind_key = '_'.join([keydict['iter-actor'], keydict['iter-actor-var']])
+            ind_key = ' '.join([keydict['iter-actor'],
+                                keydict['iter-actor-var']])
 
-            name = '_'.join([keydict['result-actor'], keydict['variable']])
+            name = ' '.join([keydict['result-actor'], keydict['variable']])
             sample_dict[name][keydict['var-value']] = int(value)
 
         df = pd.DataFrame(sample_dict)
-        df.index.name = ind_key
+        df.index.name = ind_key.title()
         df.index = df.index.astype(int)
         df.sort_index(inplace=True)
 
@@ -124,10 +141,10 @@ class SPDModel(object):
 
         tup = key.split('_')
         keydict = {'iter-actor': tup[2],
-                   'iter-actor-var': '_'.join(tup[3:5]),
+                   'iter-actor-var': ' '.join(tup[3:5]),
                    'var-value': tup[5],
                    'result-actor': tup[6],
-                   'variable': '_'.join(tup[:2])
+                   'variable': ' '.join(tup[:2])
                     }
         return keydict
 
@@ -139,10 +156,10 @@ class SPDModel(object):
 
         tup = key.split('_')
         keydict = {'iter-actor': tup[0],
-                   'iter-actor-var': '_'.join(tup[1:3]),
+                   'iter-actor-var': ' '.join(tup[1:3]),
                    'var-value': tup[3],
                    'result-actor': tup[4],
-                   'variable': '_'.join(tup[-2:])
+                   'variable': ' '.join(tup[-2:])
                     }
         return keydict
 
