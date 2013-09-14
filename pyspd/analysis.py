@@ -13,8 +13,11 @@ class Analytics(object):
     def __init__(self, lp):
         super(Analytics, self).__init__()
         self.lp = lp
+        self._parse_result()
+        self.create_price_df()
+        self.create_dispatch_df()
 
-    def parse_result(self):
+    def _parse_result(self):
         """ Publically exposed API
         Parse the Results of the solved Linear Program.
         Must be called after solving it.
