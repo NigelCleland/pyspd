@@ -17,19 +17,6 @@ class Analytics(object):
         self.create_price_df()
         self.create_dispatch_df()
 
-    def _parse_result(self):
-        """ Publically exposed API
-        Parse the Results of the solved Linear Program.
-        Must be called after solving it.
-
-        """
-        self._parse_risk()
-        self._parse_energy_prices()
-        self._parse_reserve_prices()
-        self._parse_branch_flow()
-        self._parse_reserve_dispatch()
-        self._parse_energy_dispatch()
-
     def create_dispatch_df(self):
         """ Create a DataFrame of Energy and Reserve Dispatches
         Based upon the solution to the dispatch and different instances
@@ -151,6 +138,19 @@ class Analytics(object):
                    'variable': ' '.join(tup[-2:])
                     }
         return keydict
+
+    def _parse_result(self):
+        """ Publically exposed API
+        Parse the Results of the solved Linear Program.
+        Must be called after solving it.
+
+        """
+        self._parse_risk()
+        self._parse_energy_prices()
+        self._parse_reserve_prices()
+        self._parse_branch_flow()
+        self._parse_reserve_dispatch()
+        self._parse_energy_dispatch()
 
     def _parse_energy_prices(self):
         """ Parse The Energy Prices """
