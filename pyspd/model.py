@@ -37,9 +37,6 @@ class SPDModel(object):
         """ Convenience function to compile a full run """
         self.create_lp()
         self.solve_lp(pulp.PULP_CBC_CMD())
-        self.parse_result()
-        self.create_price_df()
-        self.create_dispatch_df()
 
     def create_lp(self):
         """ Publically exposed API
@@ -71,97 +68,6 @@ class SPDModel(object):
         self.lp.solve(solver)
         self.solution_time = time.time() - begin
 
-    def parse_result(self):
-        """ Publically exposed API
-        Parse the Results of the solved Linear Program.
-        Must be called after solving it.
-
-        """
-        self._parse_risk()
-        self._parse_energy_prices()
-        self._parse_reserve_prices()
-        self._parse_branch_flow()
-        self._parse_reserve_dispatch()
-        self._parse_energy_dispatch()
-
-    def create_dispatch_df(self):
-
-        pass
-
-    def create_price_df(self):
-        """ Create a DataFrame of Energy and Reserve Prices
-        Based upon the solution to the dispatch and the different
-        instances passed. Apply an index to sort by the changing variable
-        in question.
-
-        Parameters
-        ----------
-        self.final_energy_prices: dict
-            Dictionary of the final energy prices
-        self.final_reserve_prices: dict
-            Dictionary of the final reserve prices
-
-        Returns
-        -------
-        self.final_price_df: DataFrame
-            DataFrame of the final energy and reserve prices sorted by
-            the actor variable as the index
-
-        """
-
-        sample_dict = defaultdict(dict)
-
-        for key, value in self.final_energy_prices.iteritems():
-            keydict = self._parse_constraint_key(key)
-            ind_key = ' '.join([keydict['iter-actor'],
-                                keydict['iter-actor-var']])
-
-            name = ' '.join([keydict['result-actor'], keydict['variable']])
-            sample_dict[name][keydict['var-value']] = int(value)
-
-        for key, value in self.final_reserve_prices.iteritems():
-            keydict = self._parse_constraint_key(key)
-            ind_key = ' '.join([keydict['iter-actor'],
-                                keydict['iter-actor-var']])
-
-            name = ' '.join([keydict['result-actor'], keydict['variable']])
-            sample_dict[name][keydict['var-value']] = int(value)
-
-        df = pd.DataFrame(sample_dict)
-        df.index.name = ind_key.title()
-        df.index = df.index.astype(int)
-        df.sort_index(inplace=True)
-
-        self.final_price_df = df
-
-    def _parse_variable_key(self, key):
-        """ Function to Parse the key and return the result as a dictionary
-        for indexing.
-        """
-
-        tup = key.split('_')
-        keydict = {'iter-actor': tup[2],
-                   'iter-actor-var': ' '.join(tup[3:5]),
-                   'var-value': tup[5],
-                   'result-actor': tup[6],
-                   'variable': ' '.join(tup[:2])
-                    }
-        return keydict
-
-
-    def _parse_constraint_key(self, key):
-        """ Function to Parse the key and return the result as a dictionary
-        for indexing.
-        """
-
-        tup = key.split('_')
-        keydict = {'iter-actor': tup[0],
-                   'iter-actor-var': ' '.join(tup[1:3]),
-                   'var-value': tup[3],
-                   'result-actor': tup[4],
-                   'variable': ' '.join(tup[-2:])
-                    }
-        return keydict
 
     def _setup_lp(self):
         """ Setup a Linear Program from a defined ISO instance
@@ -418,41 +324,6 @@ class SPDModel(object):
             self.addC(self.SUM([roffer[j]
                                for j in rzone_stations[i]]
                                ) - rzone_risk[i] >= perturb, name)
-
-    def _parse_energy_prices(self):
-        """ Parse The Energy Prices """
-        neg_prices = self._condict("Energy_Price")
-        self.final_energy_prices = {k: v*-1 for k, v in neg_prices.iteritems()}
-
-    def _parse_reserve_prices(self):
-        """ Parse the Reserve Prices """
-        self.final_reserve_prices = self._condict("Reserve_Price")
-
-    def _parse_energy_dispatch(self):
-        """ Parse the Energy Dispatch """
-        self.final_energy_dispatch = self._vardict("Energy_Total")
-
-    def _parse_reserve_dispatch(self):
-        """ Parse the Reserve Dispatch """
-        self.final_reserve_dispatch = self._vardict('Reserve_Total')
-
-    def _parse_branch_flow(self):
-        """ Parse the Branch Flows """
-        self.final_branch_flow = self._vardict('Transmission_Total')
-
-    def _parse_risk(self):
-        """ Parse the Risk parameters """
-        self.final_risk_requirements = self._vardict("Reserve_Risk")
-
-    def _vardict(self, condition):
-        """ Generic method for extracting values from variables """
-        return {n: n.varValue for n in self.lp.variables()
-                if condition in n.name}
-
-    def _condict(self, condition):
-        """ Generic method for extracting values from constraints """
-        return {n: self.lp.constraints[n].pi
-                for n in self.lp.constraints if condition in n}
 
 if __name__ == '__main__':
     pass
