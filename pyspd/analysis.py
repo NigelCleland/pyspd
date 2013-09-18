@@ -16,6 +16,47 @@ class Analytics(object):
         self._parse_result()
         self.create_price_df()
         self.create_dispatch_df()
+        self.create_reserve_df()
+        self.create_flow_df()
+        self.create_master()
+
+    def create_master(self):
+        """ Create a DataFrame containing information about
+        the entire system
+
+        """
+
+        prices = self._parse_to_df([self.final_energy_prices,
+                                    self.final_energy_prices],
+                                    parse_type="Constraint")
+        dispatch = self._parse_to_df([self.final_energy_dispatch,
+                                      self.final_reserve_dispatch],
+                                      parse_type="Variable")
+        risk = self._parse_to_df([self.final_risk_requirements],
+                                 parse_type="Variable")
+        flows = self._parse_to_df([self.final_branch_flow],
+                                  parse_type="Variable")
+
+        self.master = pd.concat([prices, dispatch, flows, risk], axis=1)
+
+    def create_flow_df(self):
+        """ Create a DataFrame of Transmission Flows
+
+        """
+
+        self.branch_flows = self._parse_to_df([self.final_branch_flow], parse_type="Variable")
+
+    def create_reserve_df(self):
+        """ Create a DataFrame of Reserve prices and requirements
+
+        """
+
+        prices = self._parse_to_df([self.final_reserve_prices],
+                                    parse_type="Constraint")
+        requirement = self._parse_to_df([self.final_risk_requirements],
+                                         parse_type="Variable")
+
+        self.reserve_df = pd.concat([prices, requirement], axis=1)
 
     def create_dispatch_df(self):
         """ Create a DataFrame of Energy and Reserve Dispatches
@@ -119,7 +160,7 @@ class Analytics(object):
         keydict = {'iter-actor': tup[2],
                    'iter-actor-var': ' '.join(tup[3:5]),
                    'var-value': tup[5],
-                   'result-actor': tup[6],
+                   'result-actor': "_".join(tup[6:]),
                    'variable': ' '.join(tup[:2])
                     }
         return keydict
