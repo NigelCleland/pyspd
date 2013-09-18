@@ -140,8 +140,7 @@ class Analytics(object):
         return keydict
 
     def _parse_result(self):
-        """ Publically exposed API
-        Parse the Results of the solved Linear Program.
+        """ Parse the Results of the solved Linear Program.
         Must be called after solving it.
 
         """
