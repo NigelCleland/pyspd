@@ -20,6 +20,99 @@ class Analytics(object):
         self.create_flow_df()
         self.create_master()
 
+    def revenue_calculations(self, stations, interruptible_loads):
+        """
+
+        """
+
+        self.station_revenue = pd.concat(self._station_revenue(stations),
+                                         axis=1)
+        self.interruptible_load_revenue = pd.concat(
+                    self._interruptible_load_revenue(interruptible_loads),
+                    axis=1)
+
+        self.all_revenue = pd.concat((self.station_revenue,
+                                     self.interruptible_load_revenue), axis=1)
+
+    def company_revenue(self, companies):
+
+        for company in companies:
+            company.unit_revenue = pd.concat((
+                        self._company_rev_calc(company)), axis=1)
+            company.total_revenue = company.unit_revenue.sum(axis=1)
+            company.total_revenue.name = ' '.join([company.name,
+                                                   "Total Revenue"])
+
+            company.energy_dispatch = self._company_energy_dispatch(company)
+            company.reserve_dispatch = self._company_reserve_dispatch(company)
+
+    def _company_energy_dispatch(self, company):
+        dispatches = pd.concat([station.energy_dispatch for station in company.stations], axis=1)
+        return dispatches.sum(axis=1)
+
+    def _company_reserve_dispatch(self, company):
+        if company.stations:
+            sdispatches = pd.concat([station.reserve_dispatch for station in company.stations], axis=1)
+        else:
+            sdispatches = None
+
+        if company.interruptible_loads:
+            idispatches = pd.concat([load.reserve_dispatch for load in company.interruptible_loads], axis=1)
+        else:
+            idispatches = None
+
+        alldispatches = pd.concat((sdispatches, idispatches), axis=1)
+        return alldispatches.sum(axis=1)
+
+
+
+
+    def _company_rev_calc(self, company):
+        for station in company.stations:
+            yield station.total_revenue
+
+        for load in company.interruptible_loads:
+            yield load.reserve_revenue
+
+    def _interruptible_load_revenue(self, interruptible_loads):
+        """ Generator to make the interruptible load revenue calculations"""
+        for load in interruptible_loads:
+            name, zone = (load.name, load.node.RZ.name)
+
+            load.reserve_dispatch = self.master[' '.join([name, 'Reserve Total'])]
+            load.reserve_price = self.master[' '.join([zone, "Reserve Price"])]
+            load.reserve_revenue = load.reserve_dispatch * load.reserve_price
+            load.reserve_revenue.name = " ".join([name, "Reserve Revenue"])
+            yield load.reserve_revenue
+
+    def _station_revenue(self, stations):
+        """ Generator to make the station revenue calculations`
+        """
+        for station in stations:
+            name, node, zone = (station.name, station.node.name,
+                                station.node.RZ.name)
+
+            station.energy_dispatch = self.master[' '.join([name, 'Energy Total'])].copy()
+            station.energy_price  = self.master[' '.join([node, "Energy Price"])].copy()
+            station.reserve_dispatch = self.master[' '.join([name,
+                                                             'Reserve Total'])
+                                                  ].copy()
+            station.reserve_price = self.master[' '.join([zone,
+                                                         "Reserve Price"]
+                                                         )].copy()
+
+            station.energy_revenue = station.energy_dispatch * station.energy_price
+            station.energy_revenue.name = " ".join([name, "Energy Revenue"])
+            station.reserve_revenue = station.reserve_dispatch * station.reserve_price
+            station.reserve_revenue.name = " ".join([name, "Reserve Revenue"])
+            station.total_revenue = station.energy_revenue + station.reserve_revenue
+            station.total_revenue.name = " ".join([name, "Total Revenue"])
+
+            yield pd.concat((station.energy_revenue,
+                             station.reserve_revenue,
+                             station.total_revenue), axis=1)
+
+
     def create_master(self):
         """ Create a DataFrame containing information about
         the entire system
@@ -27,7 +120,7 @@ class Analytics(object):
         """
 
         prices = self._parse_to_df([self.final_energy_prices,
-                                    self.final_energy_prices],
+                                    self.final_reserve_prices],
                                     parse_type="Constraint")
         dispatch = self._parse_to_df([self.final_energy_dispatch,
                                       self.final_reserve_dispatch],
