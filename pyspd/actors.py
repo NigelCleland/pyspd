@@ -334,7 +334,7 @@ class Company(object):
         self._company_profit()
 
     def _company_profit(self):
-        self.unit_profit = pd.concat(self._company_pro, axis=1)
+        self.unit_profit = pd.concat(self._company_pro(), axis=1)
         self.company_profits = self.unit_profit.sum(axis=1)
 
     def _company_pro(self):
@@ -345,11 +345,11 @@ class Company(object):
             yield load.total_profit
 
     def _company_revenue(self):
-        self.unit_revenue = pd.concat(self._company_rev, axis=1)
+        self.unit_revenue = pd.concat(self._company_rev(), axis=1)
         self.company_revenue = self.unit_revenue.sum(axis=1)
 
     def _company_cost(self):
-        self.unit_cost = pd.concat(self._company_costs, axis=1)
+        self.unit_cost = pd.concat(self._company_costs(), axis=1)
         self.company_cost = self.unit_cost.sum(axis=1)
 
     def _company_rev(self):
