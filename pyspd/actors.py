@@ -688,6 +688,37 @@ class InterruptibleLoad(object):
 
         self.cost_func = func
 
+    def _reserve_revenue(self):
+        self.reserve_dispatch = self._query(self._name("Reserve Total"))
+        rz_name = " ".join([self.node.RZ.name, "Reserve Price"])
+        self.reserve_price = self._query(rz_name)
+
+        self.reserve_revenue = self.reserve_dispatch * self.reserve_price
+        self.reserve_revenue.name = self._name("Reserve Revenue")
+
+    def _total_revenue(self):
+        self.total_revenue = self.reserve_revenue.copy()
+        self.total_revenue.name = self._name("Total Revenue")
+
+    def _reserve_cost(self):
+        self.reserve_cost = self.reserve_dispatch.apply(self.reserve_cost_func)
+        self.reserve_cost.name = self._name("Reserve Cost")
+
+    def _total_cost(self):
+        self.total_cost = self.reserve_cost.copy()
+        self.total_cost.name = self._name("Total Cost")
+
+    def _reserve_profit(self):
+        self.reserve_profit = self.reserve_revenue - self.reserve_cost
+        self.reserve_profit.name = self._name("Reserve Profit")
+
+    def _total_profit(self):
+        self.total_profit = self.total_revenue - self.total_cost
+        self.total_profit.name = self._name("Total Profit")
+
+    def _query(self, col):
+        """ Note that this is terribly kludgy and I don't like it at all """
+        return self.SO.Analysis.master[col].copy()
 
 class Branch(object):
     """Branch
