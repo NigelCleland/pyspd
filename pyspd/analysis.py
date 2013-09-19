@@ -26,7 +26,6 @@ class Analytics(object):
     def create_master(self):
         """ Create a DataFrame containing information about
         the entire system
-
         """
 
         prices = self._parse_to_df([self.final_energy_prices,
@@ -44,7 +43,6 @@ class Analytics(object):
 
     def create_flow_df(self):
         """ Create a DataFrame of Transmission Flows
-
         """
 
         self.branch_flows = self._parse_to_df([self.final_branch_flow],
@@ -52,7 +50,6 @@ class Analytics(object):
 
     def create_reserve_df(self):
         """ Create a DataFrame of Reserve prices and requirements
-
         """
 
         prices = self._parse_to_df([self.final_reserve_prices],

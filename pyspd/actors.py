@@ -323,7 +323,12 @@ class Company(object):
 ###
 
     def calculate_profit(self):
+        """ Exposed Method
 
+        Wrapper to calculate revenue, costs and profits for all of the
+        companies generation stations and interruptible load providers.
+
+        """
         self._company_revenue()
         self._company_cost()
         self._company_profit()
@@ -571,6 +576,9 @@ class Station(object):
         self.reserve_cost_func = func
 
     def calculate_profits(self):
+        """ Exposed method to calculate all of a stations energy and
+        reserve revenue, costs and profits
+        """
 
         self._energy_revenue()
         self._reserve_revenue()
@@ -691,6 +699,9 @@ class InterruptibleLoad(object):
         self.reserve_cost_func = func
 
     def calculate_profits(self):
+        """ Exposed method to calculate an interruptible load providers
+        profits, costs and revenue
+        """
         self._reserve_revenue()
         self._total_revenue()
         self._reserve_cost()
