@@ -6,7 +6,7 @@ from collections import defaultdict
 
 # C Imports
 import numpy as np
-
+import pandas as pd
 # ----------------------------------------------------------------------------
 # SYSTEM OPERATOR
 # ----------------------------------------------------------------------------
@@ -318,6 +318,46 @@ class Company(object):
         self.interruptible_loads.append(IL)
         return self
 
+###
+# Revenue Calculations
+###
+
+    def company_revenue(self):
+
+        self.unit_revenue = pd.concat((
+                    self._company_rev_calc(self)), axis=1)
+        self.total_revenue = self.unit_revenue.sum(axis=1)
+        self.total_revenue.name = ' '.join([self.name,
+                                               "Total Revenue"])
+
+        self.energy_dispatch = self._company_energy_dispatch(self)
+        self.reserve_dispatch = self._company_reserve_dispatch(self)
+
+    def _company_energy_dispatch(self, company):
+        dispatches = pd.concat([station.energy_dispatch for station in company.stations], axis=1)
+        return dispatches.sum(axis=1)
+
+    def _company_reserve_dispatch(self, company):
+        if company.stations:
+            sdispatches = pd.concat([station.reserve_dispatch for station in company.stations], axis=1)
+        else:
+            sdispatches = None
+
+        if company.interruptible_loads:
+            idispatches = pd.concat([load.reserve_dispatch for load in company.interruptible_loads], axis=1)
+        else:
+            idispatches = None
+
+        alldispatches = pd.concat((sdispatches, idispatches), axis=1)
+        return alldispatches.sum(axis=1)
+
+    def _company_rev_calc(self, company):
+        for station in company.stations:
+            yield station.total_revenue
+
+        for load in company.interruptible_loads:
+            yield load.reserve_revenue
+
 
 class Node(object):
     """Node
@@ -483,6 +523,9 @@ class Station(object):
         self.SO = SO
         SO._add_station(self)
 
+        self.energy_cost_func = lambda x: 0
+        self.reserve_cost_func = lambda x: 0
+
     def add_energy_offer(self, price, offer):
         """ Adds an Energy Offer to the station
 
@@ -516,6 +559,79 @@ class Station(object):
         self.reserve_proportion = proportion
         return self
 
+    def add_energy_cost_func(self, func):
+
+        self.energy_cost_func = func
+
+    def add_reserve_cost_func(self, func):
+
+        self.reserve_cost_func = func
+
+    def calculate_profits(self):
+
+        self._energy_revenue()
+        self._reserve_revenue()
+        self._total_revenue()
+
+        self._energy_cost()
+        self._reserve_cost()
+        self._total_cost()
+
+        self._energy_profit()
+        self._reserve_profit()
+        self._total_profit()
+
+    def _energy_revenue(self):
+        self.energy_dispatch = self._query(self._name("Energy Total"))
+        nd_name = " ".join([self.node.name, "Energy Price"])
+        self.energy_price  = self._query(nd_name)
+        # Revenue Calculations
+        self.energy_revenue = self.energy_dispatch * self.energy_price
+        self.energy_revenue.name = self._name("Energy Revenue")
+
+    def _reserve_revenue(self):
+        self.reserve_dispatch = self._query(self._name("Reserve Total"))
+        rz_name = " ".join([self.node.RZ.name, "Reserve Price"])
+        self.reserve_price = self._query(rz_name)
+
+        self.reserve_revenue = self.reserve_dispatch * self.reserve_price
+        self.reserve_revenue.name = self._name("Reserve Revenue")
+
+    def _total_revenue(self):
+        self.total_revenue = self.energy_revenue + self.reserve_revenue
+        self.total_revenue.name = self._name("Total Revenue")
+
+    def _energy_cost(self):
+        self.energy_cost = self.energy_dispatch.apply(self.energy_cost_func)
+        self.energy_cost.name = self._name("Energy Cost")
+
+    def _reserve_cost(self):
+        self.reserve_cost = self.reserve_dispatch.apply(self.reserve_cost_func)
+        self.reserve_cost.name = self._name("Reserve Cost")
+
+    def _total_cost(self):
+        self.total_cost = self.reserve_cost + self.energy_cost
+        self.total_cost.name = self._name("Total Cost")
+
+    def _energy_profit(self):
+        self.energy_profit = self.energy_revenue - self.energy_cost
+        self.energy_profit.name = self._name("Energy Profit")
+
+    def _reserve_profit(self):
+        self.reserve_profit = self.reserve_revenue - self.reserve_cost
+        self.reserve_profit.name = self._name("Reserve Profit")
+
+    def _total_profit(self):
+        self.total_profit = self.total_revenue - self.total_cost
+        self.total_profit.name = self._name("Total Profit")
+
+    def _name(self, adj):
+        return " ".join([self.name, adj])
+
+    def _query(self, col):
+        """ Note that this is terribly kludgy and I don't like it at all """
+        return self.SO.Analysis.master[col].copy()
+
 
 class InterruptibleLoad(object):
     """InterruptibleLoad
@@ -545,6 +661,7 @@ class InterruptibleLoad(object):
         self.name = name
         self.node = Node
         self.company = Company
+        self.reserve_cost_func = lambda x: 0
 
         Node._add_interruptible_load(self)
         Company._add_interruptible_load(self)
@@ -567,6 +684,40 @@ class InterruptibleLoad(object):
         self.reserve_offer = offer
         return self
 
+    def add_reseve_cost_func(self, func):
+        self.reserve_cost_func = func
+
+    def _reserve_revenue(self):
+        self.reserve_dispatch = self._query(self._name("Reserve Total"))
+        rz_name = " ".join([self.node.RZ.name, "Reserve Price"])
+        self.reserve_price = self._query(rz_name)
+
+        self.reserve_revenue = self.reserve_dispatch * self.reserve_price
+        self.reserve_revenue.name = self._name("Reserve Revenue")
+
+    def _total_revenue(self):
+        self.total_revenue = self.reserve_revenue.copy()
+        self.total_revenue.name = self._name("Total Revenue")
+
+    def _reserve_cost(self):
+        self.reserve_cost = self.reserve_dispatch.apply(self.reserve_cost_func)
+        self.reserve_cost.name = self._name("Reserve Cost")
+
+    def _total_cost(self):
+        self.total_cost = self.reserve_cost.copy()
+        self.total_cost.name = self._name("Total Cost")
+
+    def _reserve_profit(self):
+        self.reserve_profit = self.reserve_revenue - self.reserve_cost
+        self.reserve_profit.name = self._name("Reserve Profit")
+
+    def _total_profit(self):
+        self.total_profit = self.total_revenue - self.total_cost
+        self.total_profit.name = self._name("Total Profit")
+
+    def _query(self, col):
+        """ Note that this is terribly kludgy and I don't like it at all """
+        return self.SO.Analysis.master[col].copy()
 
 class Branch(object):
     """Branch

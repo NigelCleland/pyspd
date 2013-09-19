@@ -32,6 +32,7 @@ class SPDModel(object):
         super(SPDModel, self).__init__()
 
         self.ISO = ISO
+        ISO.SPD = self
 
     def full_run(self):
         """ Convenience function to compile a full run """

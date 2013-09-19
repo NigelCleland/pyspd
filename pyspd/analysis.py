@@ -10,9 +10,11 @@ import pandas as pd
 
 class Analytics(object):
     """docstring for Analytics"""
-    def __init__(self, lp):
+    def __init__(self, SPD):
         super(Analytics, self).__init__()
-        self.lp = lp
+        self.lp = SPD.lp
+        self.ISO = SPD.ISO
+        SPD.ISO.Analysis = self
         self._parse_result()
         self.create_price_df()
         self.create_dispatch_df()
@@ -34,45 +36,6 @@ class Analytics(object):
         self.all_revenue = pd.concat((self.station_revenue,
                                      self.interruptible_load_revenue), axis=1)
 
-    def company_revenue(self, companies):
-
-        for company in companies:
-            company.unit_revenue = pd.concat((
-                        self._company_rev_calc(company)), axis=1)
-            company.total_revenue = company.unit_revenue.sum(axis=1)
-            company.total_revenue.name = ' '.join([company.name,
-                                                   "Total Revenue"])
-
-            company.energy_dispatch = self._company_energy_dispatch(company)
-            company.reserve_dispatch = self._company_reserve_dispatch(company)
-
-    def _company_energy_dispatch(self, company):
-        dispatches = pd.concat([station.energy_dispatch for station in company.stations], axis=1)
-        return dispatches.sum(axis=1)
-
-    def _company_reserve_dispatch(self, company):
-        if company.stations:
-            sdispatches = pd.concat([station.reserve_dispatch for station in company.stations], axis=1)
-        else:
-            sdispatches = None
-
-        if company.interruptible_loads:
-            idispatches = pd.concat([load.reserve_dispatch for load in company.interruptible_loads], axis=1)
-        else:
-            idispatches = None
-
-        alldispatches = pd.concat((sdispatches, idispatches), axis=1)
-        return alldispatches.sum(axis=1)
-
-
-
-
-    def _company_rev_calc(self, company):
-        for station in company.stations:
-            yield station.total_revenue
-
-        for load in company.interruptible_loads:
-            yield load.reserve_revenue
 
     def _interruptible_load_revenue(self, interruptible_loads):
         """ Generator to make the interruptible load revenue calculations"""
@@ -101,6 +64,13 @@ class Analytics(object):
                                                          "Reserve Price"]
                                                          )].copy()
 
+            # Cost Calculations
+            station.energy_cost = station.energy_dispatch.apply(station.energy_cost_func)
+            station.energy_cost.name = "Energy Cost"
+            station.reserve_cost = station.reserve_dispatch.apply(station.reserve_cost_func)
+            station.reserve_cost.name = "Reserve Cost"
+
+            # Revenue Calculations
             station.energy_revenue = station.energy_dispatch * station.energy_price
             station.energy_revenue.name = " ".join([name, "Energy Revenue"])
             station.reserve_revenue = station.reserve_dispatch * station.reserve_price
@@ -108,6 +78,15 @@ class Analytics(object):
             station.total_revenue = station.energy_revenue + station.reserve_revenue
             station.total_revenue.name = " ".join([name, "Total Revenue"])
 
+            # Profit Calculations
+            station.energy_profit = station.energy_revenue - station.energy_cost
+            station.energy_profit.name = "Energy Profit"
+            station.reserve_profit = station.reserve_revenue - station.reserve_cost
+            station.reserve_profit.name = "Reserve Profit"
+            station.total_profit = station.total_revenue - station.energy_cost - station.reserve_cost
+            station.total_profit.name = "Total Profit"
+
+            # Yield The Revenue
             yield pd.concat((station.energy_revenue,
                              station.reserve_revenue,
                              station.total_revenue), axis=1)
