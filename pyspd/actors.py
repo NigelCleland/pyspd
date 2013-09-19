@@ -567,6 +567,20 @@ class Station(object):
 
         self.reserve_cost_func = func
 
+    def calculate_profits(self):
+
+        self._energy_revenue()
+        self._reserve_revenue()
+        self._total_revenue()
+
+        self._energy_cost()
+        self._reserve_cost()
+        self._total_cost()
+
+        self._energy_profit()
+        self._reserve_profit()
+        self.total_profit()
+
     def _energy_revenue(self):
         self.energy_dispatch = self._query(self._name("Energy Total"))
         nd_name = " ".join([self.node.name, "Energy Price"])
