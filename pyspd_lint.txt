@@ -1,0 +1,37 @@
+pyspd/analysis.py:4:1: F401 'pulp' imported but unused
+pyspd/analysis.py:5:1: F401 'time' imported but unused
+pyspd/analysis.py:11:1: E302 expected 2 blank lines, found 1
+pyspd/analysis.py:31:21: E126 continuation line over-indented for hanging indent
+pyspd/analysis.py:32:21: E126 continuation line over-indented for hanging indent
+pyspd/analysis.py:41:25: E126 continuation line over-indented for hanging indent
+pyspd/analysis.py:50:80: E501 line too long (97 > 79 characters)
+pyspd/analysis.py:55:80: E501 line too long (103 > 79 characters)
+pyspd/analysis.py:60:80: E501 line too long (108 > 79 characters)
+pyspd/analysis.py:70:5: E303 too many blank lines (4)
+pyspd/analysis.py:82:80: E501 line too long (82 > 79 characters)
+pyspd/analysis.py:95:80: E501 line too long (90 > 79 characters)
+pyspd/analysis.py:96:33: E221 multiple spaces before operator
+pyspd/analysis.py:96:80: E501 line too long (88 > 79 characters)
+pyspd/analysis.py:99:51: E124 closing bracket does not match visual indentation
+pyspd/analysis.py:104:80: E501 line too long (83 > 79 characters)
+pyspd/analysis.py:106:80: E501 line too long (86 > 79 characters)
+pyspd/analysis.py:108:80: E501 line too long (84 > 79 characters)
+pyspd/analysis.py:116:5: E303 too many blank lines (2)
+pyspd/analysis.py:124:37: E127 continuation line over-indented for visual indent
+pyspd/analysis.py:127:39: E127 continuation line over-indented for visual indent
+pyspd/analysis.py:140:80: E501 line too long (94 > 79 characters)
+pyspd/analysis.py:148:37: E127 continuation line over-indented for visual indent
+pyspd/analysis.py:150:42: E127 continuation line over-indented for visual indent
+pyspd/analysis.py:174:50: E128 continuation line under-indented for visual indent
+pyspd/analysis.py:175:50: E128 continuation line under-indented for visual indent
+pyspd/analysis.py:200:50: E127 continuation line over-indented for visual indent
+pyspd/analysis.py:258:21: E124 closing bracket does not match visual indentation
+pyspd/analysis.py:262:5: E303 too many blank lines (2)
+pyspd/analysis.py:273:21: E124 closing bracket does not match visual indentation
+pyspd/model.py:11:1: F401 'defaultdict' imported but unused
+pyspd/model.py:14:1: F401 'pd' imported but unused
+pyspd/model.py:16:1: E302 expected 2 blank lines, found 1
+pyspd/model.py:72:5: E303 too many blank lines (2)
+pyspd/model.py:168:80: E501 line too long (86 > 79 characters)
+pyspd/model.py:172:21: E128 continuation line under-indented for visual indent
+pyspd/model.py:304:80: E501 line too long (86 > 79 characters)
