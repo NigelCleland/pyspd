@@ -62,6 +62,13 @@ class Analytics(object):
                                                          "Reserve Price"]
                                                          )].copy()
 
+            # Cost Calculations
+            station.energy_cost = station.energy_dispatch.apply(station.energy_cost_func)
+            station.energy_cost.name = "Energy Cost"
+            station.reserve_cost = station.reserve_dispatch.apply(station.reserve_cost_func)
+            station.reserve_cost.name = "Reserve Cost"
+
+            # Revenue Calculations
             station.energy_revenue = station.energy_dispatch * station.energy_price
             station.energy_revenue.name = " ".join([name, "Energy Revenue"])
             station.reserve_revenue = station.reserve_dispatch * station.reserve_price
@@ -69,6 +76,15 @@ class Analytics(object):
             station.total_revenue = station.energy_revenue + station.reserve_revenue
             station.total_revenue.name = " ".join([name, "Total Revenue"])
 
+            # Profit Calculations
+            station.energy_profit = station.energy_revenue - station.energy_cost
+            station.energy_profit.name = "Energy Profit"
+            station.reserve_profit = station.reserve_revenue - station.reserve_cost
+            station.reserve_profit.name = "Reserve Profit"
+            station.total_profit = station.total_revenue - station.energy_cost - station.reserve_cost
+            station.total_profit.name = "Total Profit"
+
+            # Yield The Revenue
             yield pd.concat((station.energy_revenue,
                              station.reserve_revenue,
                              station.total_revenue), axis=1)

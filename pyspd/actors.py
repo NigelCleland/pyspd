@@ -523,7 +523,8 @@ class Station(object):
         self.SO = SO
         SO._add_station(self)
 
-        self.cost_func = lambda x: 0
+        self.energy_cost_func = lambda x: 0
+        self.reserve_cost_func = lambda x: 0
 
     def add_energy_offer(self, price, offer):
         """ Adds an Energy Offer to the station
@@ -558,9 +559,13 @@ class Station(object):
         self.reserve_proportion = proportion
         return self
 
-    def add_cost_func(self, func):
+    def add_energy_cost_func(self, func):
 
-        self.cost_func = func
+        self.energy_cost_func = func
+
+    def add_reserve_cost_func(self, func):
+
+        self.reserve_cost_func = func
 
 
 class InterruptibleLoad(object):
