@@ -687,6 +687,14 @@ class InterruptibleLoad(object):
     def add_reseve_cost_func(self, func):
         self.reserve_cost_func = func
 
+    def calculate_profits(self):
+        self._reserve_revenue()
+        self._total_revenue()
+        self._reserve_cost()
+        self._total_cost()
+        self._reserve_profit()
+        self._total_profit()
+
     def _reserve_revenue(self):
         self.reserve_dispatch = self._query(self._name("Reserve Total"))
         rz_name = " ".join([self.node.RZ.name, "Reserve Price"])
