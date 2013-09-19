@@ -579,7 +579,7 @@ class Station(object):
 
         self._energy_profit()
         self._reserve_profit()
-        self.total_profit()
+        self._total_profit()
 
     def _energy_revenue(self):
         self.energy_dispatch = self._query(self._name("Energy Total"))
