@@ -567,6 +567,56 @@ class Station(object):
 
         self.reserve_cost_func = func
 
+    def _energy_revenue(self):
+        self.energy_dispatch = self.master[' '.join([name, 'Energy Total'])
+                                          ].copy()
+        self.energy_price  = self.master[' '.join([node, "Energy Price"])
+                                        ].copy()
+        # Revenue Calculations
+        self.energy_revenue = self.energy_dispatch * self.energy_price
+        self.energy_revenue.name = self._name("Energy Revenue")
+
+    def _reserve_revenue(self):
+        self.reserve_dispatch = self.master[' '.join([name,'Reserve Total'])
+                                           ].copy()
+
+        self.reserve_price = self.master[' '.join([zone, "Reserve Price"])
+                                        ].copy()
+
+        self.reserve_revenue = self.reserve_dispatch * self.reserve_price
+        self.reserve_revenue.name = self._name("Reserve Revenue")
+
+    def _total_revenue(self):
+        self.total_revenue = self.energy_revenue + self.reserve_revenue
+        self.total_revenue.name = self._name("Total Revenue")
+
+    def _energy_cost(self):
+        self.energy_cost = self.energy_dispatch.apply(self.energy_cost_func)
+        self.energy_cost.name = self._name("Energy Cost")
+
+    def _reserve_cost(self):
+        self.reserve_cost = self.reserve_dispatch.apply(self.reserve_cost_func)
+        self.reserve_cost.name = self._name("Reserve Cost")
+
+    def _total_cost(self):
+        self.total_cost = self.reserve_cost + self.energy_cost
+        self.total_cost.name = self._name("Total Cost")
+
+    def _energy_profit(self):
+        self.energy_profit = self.energy_revenue - self.energy_cost
+        self.energy_profit.name = self._name("Energy Profit")
+
+    def _reserve_profit(self):
+        self.reserve_profit = self.reserve_revenue - self.reserve_cost
+        self.reserve_profit.name = self._name("Reserve Profit")
+
+    def _total_profit(self):
+        self.total_profit = self.total_revenue - self.total_cost
+        self.total_profit.name = self._name("Total Profit")
+
+    def _name(self, adj):
+        return " ".join([self.name, adj])
+
 
 class InterruptibleLoad(object):
     """InterruptibleLoad
