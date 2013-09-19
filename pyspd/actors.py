@@ -661,7 +661,7 @@ class InterruptibleLoad(object):
         self.name = name
         self.node = Node
         self.company = Company
-        self.cost_func = lambda x: 0
+        self.reserve_cost_func = lambda x: 0
 
         Node._add_interruptible_load(self)
         Company._add_interruptible_load(self)
@@ -684,9 +684,8 @@ class InterruptibleLoad(object):
         self.reserve_offer = offer
         return self
 
-    def add_cost_func(self, func):
-
-        self.cost_func = func
+    def add_reseve_cost_func(self, func):
+        self.reserve_cost_func = func
 
     def _reserve_revenue(self):
         self.reserve_dispatch = self._query(self._name("Reserve Total"))
