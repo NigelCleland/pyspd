@@ -34,45 +34,6 @@ class Analytics(object):
         self.all_revenue = pd.concat((self.station_revenue,
                                      self.interruptible_load_revenue), axis=1)
 
-    def company_revenue(self, companies):
-
-        for company in companies:
-            company.unit_revenue = pd.concat((
-                        self._company_rev_calc(company)), axis=1)
-            company.total_revenue = company.unit_revenue.sum(axis=1)
-            company.total_revenue.name = ' '.join([company.name,
-                                                   "Total Revenue"])
-
-            company.energy_dispatch = self._company_energy_dispatch(company)
-            company.reserve_dispatch = self._company_reserve_dispatch(company)
-
-    def _company_energy_dispatch(self, company):
-        dispatches = pd.concat([station.energy_dispatch for station in company.stations], axis=1)
-        return dispatches.sum(axis=1)
-
-    def _company_reserve_dispatch(self, company):
-        if company.stations:
-            sdispatches = pd.concat([station.reserve_dispatch for station in company.stations], axis=1)
-        else:
-            sdispatches = None
-
-        if company.interruptible_loads:
-            idispatches = pd.concat([load.reserve_dispatch for load in company.interruptible_loads], axis=1)
-        else:
-            idispatches = None
-
-        alldispatches = pd.concat((sdispatches, idispatches), axis=1)
-        return alldispatches.sum(axis=1)
-
-
-
-
-    def _company_rev_calc(self, company):
-        for station in company.stations:
-            yield station.total_revenue
-
-        for load in company.interruptible_loads:
-            yield load.reserve_revenue
 
     def _interruptible_load_revenue(self, interruptible_loads):
         """ Generator to make the interruptible load revenue calculations"""

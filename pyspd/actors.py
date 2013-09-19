@@ -6,7 +6,7 @@ from collections import defaultdict
 
 # C Imports
 import numpy as np
-
+import pandas as pd
 # ----------------------------------------------------------------------------
 # SYSTEM OPERATOR
 # ----------------------------------------------------------------------------
@@ -318,6 +318,46 @@ class Company(object):
         self.interruptible_loads.append(IL)
         return self
 
+###
+# Revenue Calculations
+###
+
+    def company_revenue(self):
+
+        self.unit_revenue = pd.concat((
+                    self._company_rev_calc(self)), axis=1)
+        self.total_revenue = self.unit_revenue.sum(axis=1)
+        self.total_revenue.name = ' '.join([self.name,
+                                               "Total Revenue"])
+
+        self.energy_dispatch = self._company_energy_dispatch(self)
+        self.reserve_dispatch = self._company_reserve_dispatch(self)
+
+    def _company_energy_dispatch(self, company):
+        dispatches = pd.concat([station.energy_dispatch for station in company.stations], axis=1)
+        return dispatches.sum(axis=1)
+
+    def _company_reserve_dispatch(self, company):
+        if company.stations:
+            sdispatches = pd.concat([station.reserve_dispatch for station in company.stations], axis=1)
+        else:
+            sdispatches = None
+
+        if company.interruptible_loads:
+            idispatches = pd.concat([load.reserve_dispatch for load in company.interruptible_loads], axis=1)
+        else:
+            idispatches = None
+
+        alldispatches = pd.concat((sdispatches, idispatches), axis=1)
+        return alldispatches.sum(axis=1)
+
+    def _company_rev_calc(self, company):
+        for station in company.stations:
+            yield station.total_revenue
+
+        for load in company.interruptible_loads:
+            yield load.reserve_revenue
+
 
 class Node(object):
     """Node
@@ -483,6 +523,8 @@ class Station(object):
         self.SO = SO
         SO._add_station(self)
 
+        self.cost_func = lambda x: 0
+
     def add_energy_offer(self, price, offer):
         """ Adds an Energy Offer to the station
 
@@ -516,6 +558,10 @@ class Station(object):
         self.reserve_proportion = proportion
         return self
 
+    def add_cost_func(self, func):
+
+        self.cost_func = func
+
 
 class InterruptibleLoad(object):
     """InterruptibleLoad
@@ -545,6 +591,7 @@ class InterruptibleLoad(object):
         self.name = name
         self.node = Node
         self.company = Company
+        self.cost_func = lambda x: 0
 
         Node._add_interruptible_load(self)
         Company._add_interruptible_load(self)
@@ -566,6 +613,10 @@ class InterruptibleLoad(object):
         self.reserve_price = price
         self.reserve_offer = offer
         return self
+
+    def add_cost_func(self, func):
+
+        self.cost_func = func
 
 
 class Branch(object):
