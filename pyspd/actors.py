@@ -322,41 +322,44 @@ class Company(object):
 # Revenue Calculations
 ###
 
-    def company_revenue(self):
+    def calculate_profit(self):
 
-        self.unit_revenue = pd.concat((
-                    self._company_rev_calc(self)), axis=1)
-        self.total_revenue = self.unit_revenue.sum(axis=1)
-        self.total_revenue.name = ' '.join([self.name,
-                                               "Total Revenue"])
+        self._company_revenue()
+        self._company_cost()
+        self._company_profit()
 
-        self.energy_dispatch = self._company_energy_dispatch(self)
-        self.reserve_dispatch = self._company_reserve_dispatch(self)
+    def _company_profit(self):
+        self.unit_profit = pd.concat(self._company_pro, axis=1)
+        self.company_profits = self.unit_profit.sum(axis=1)
 
-    def _company_energy_dispatch(self, company):
-        dispatches = pd.concat([station.energy_dispatch for station in company.stations], axis=1)
-        return dispatches.sum(axis=1)
+    def _company_pro(self):
+        for station in self.stations:
+            yield station.total_profit
 
-    def _company_reserve_dispatch(self, company):
-        if company.stations:
-            sdispatches = pd.concat([station.reserve_dispatch for station in company.stations], axis=1)
-        else:
-            sdispatches = None
+        for load in self.interruptible_loads:
+            yield load.total_profit
 
-        if company.interruptible_loads:
-            idispatches = pd.concat([load.reserve_dispatch for load in company.interruptible_loads], axis=1)
-        else:
-            idispatches = None
+    def _company_revenue(self):
+        self.unit_revenue = pd.concat(self._company_rev, axis=1)
+        self.company_revenue = self.unit_revenue.sum(axis=1)
 
-        alldispatches = pd.concat((sdispatches, idispatches), axis=1)
-        return alldispatches.sum(axis=1)
+    def _company_cost(self):
+        self.unit_cost = pd.concat(self._company_costs, axis=1)
+        self.company_cost = self.unit_cost.sum(axis=1)
 
-    def _company_rev_calc(self, company):
-        for station in company.stations:
+    def _company_rev(self):
+        for station in self.stations:
             yield station.total_revenue
 
-        for load in company.interruptible_loads:
+        for load in self.interruptible_loads:
             yield load.reserve_revenue
+
+    def _company_costs(self):
+        for station in self.stations:
+            yield station.total_cost
+
+        for load in self.interruptible_loads:
+            yield load.total_cost
 
 
 class Node(object):

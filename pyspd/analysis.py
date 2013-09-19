@@ -22,75 +22,6 @@ class Analytics(object):
         self.create_flow_df()
         self.create_master()
 
-    def revenue_calculations(self, stations, interruptible_loads):
-        """
-
-        """
-
-        self.station_revenue = pd.concat(self._station_revenue(stations),
-                                         axis=1)
-        self.interruptible_load_revenue = pd.concat(
-                    self._interruptible_load_revenue(interruptible_loads),
-                    axis=1)
-
-        self.all_revenue = pd.concat((self.station_revenue,
-                                     self.interruptible_load_revenue), axis=1)
-
-
-    def _interruptible_load_revenue(self, interruptible_loads):
-        """ Generator to make the interruptible load revenue calculations"""
-        for load in interruptible_loads:
-            name, zone = (load.name, load.node.RZ.name)
-
-            load.reserve_dispatch = self.master[' '.join([name, 'Reserve Total'])]
-            load.reserve_price = self.master[' '.join([zone, "Reserve Price"])]
-            load.reserve_revenue = load.reserve_dispatch * load.reserve_price
-            load.reserve_revenue.name = " ".join([name, "Reserve Revenue"])
-            yield load.reserve_revenue
-
-    def _station_revenue(self, stations):
-        """ Generator to make the station revenue calculations`
-        """
-        for station in stations:
-            name, node, zone = (station.name, station.node.name,
-                                station.node.RZ.name)
-
-            station.energy_dispatch = self.master[' '.join([name, 'Energy Total'])].copy()
-            station.energy_price  = self.master[' '.join([node, "Energy Price"])].copy()
-            station.reserve_dispatch = self.master[' '.join([name,
-                                                             'Reserve Total'])
-                                                  ].copy()
-            station.reserve_price = self.master[' '.join([zone,
-                                                         "Reserve Price"]
-                                                         )].copy()
-
-            # Cost Calculations
-            station.energy_cost = station.energy_dispatch.apply(station.energy_cost_func)
-            station.energy_cost.name = "Energy Cost"
-            station.reserve_cost = station.reserve_dispatch.apply(station.reserve_cost_func)
-            station.reserve_cost.name = "Reserve Cost"
-
-            # Revenue Calculations
-            station.energy_revenue = station.energy_dispatch * station.energy_price
-            station.energy_revenue.name = " ".join([name, "Energy Revenue"])
-            station.reserve_revenue = station.reserve_dispatch * station.reserve_price
-            station.reserve_revenue.name = " ".join([name, "Reserve Revenue"])
-            station.total_revenue = station.energy_revenue + station.reserve_revenue
-            station.total_revenue.name = " ".join([name, "Total Revenue"])
-
-            # Profit Calculations
-            station.energy_profit = station.energy_revenue - station.energy_cost
-            station.energy_profit.name = "Energy Profit"
-            station.reserve_profit = station.reserve_revenue - station.reserve_cost
-            station.reserve_profit.name = "Reserve Profit"
-            station.total_profit = station.total_revenue - station.energy_cost - station.reserve_cost
-            station.total_profit.name = "Total Profit"
-
-            # Yield The Revenue
-            yield pd.concat((station.energy_revenue,
-                             station.reserve_revenue,
-                             station.total_revenue), axis=1)
-
 
     def create_master(self):
         """ Create a DataFrame containing information about
@@ -116,7 +47,8 @@ class Analytics(object):
 
         """
 
-        self.branch_flows = self._parse_to_df([self.final_branch_flow], parse_type="Variable")
+        self.branch_flows = self._parse_to_df([self.final_branch_flow],
+                                              parse_type="Variable")
 
     def create_reserve_df(self):
         """ Create a DataFrame of Reserve prices and requirements
