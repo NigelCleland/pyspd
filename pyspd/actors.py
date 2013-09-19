@@ -568,20 +568,17 @@ class Station(object):
         self.reserve_cost_func = func
 
     def _energy_revenue(self):
-        self.energy_dispatch = self.master[' '.join([name, 'Energy Total'])
-                                          ].copy()
-        self.energy_price  = self.master[' '.join([node, "Energy Price"])
-                                        ].copy()
+        self.energy_dispatch = self._query(self._name("Energy Total"))
+        nd_name = " ".join([self.node.name, "Energy Price"])
+        self.energy_price  = self._query(nd_name)
         # Revenue Calculations
         self.energy_revenue = self.energy_dispatch * self.energy_price
         self.energy_revenue.name = self._name("Energy Revenue")
 
     def _reserve_revenue(self):
-        self.reserve_dispatch = self.master[' '.join([name,'Reserve Total'])
-                                           ].copy()
-
-        self.reserve_price = self.master[' '.join([zone, "Reserve Price"])
-                                        ].copy()
+        self.reserve_dispatch = self._query(self._name("Reserve Total"))
+        rz_name = " ".join([self.node.RZ.name, "Reserve Price"])
+        self.reserve_price = self._query(rz_name)
 
         self.reserve_revenue = self.reserve_dispatch * self.reserve_price
         self.reserve_revenue.name = self._name("Reserve Revenue")
@@ -616,6 +613,10 @@ class Station(object):
 
     def _name(self, adj):
         return " ".join([self.name, adj])
+
+    def _query(self, col):
+        """ Note that this is terribly kludgy and I don't like it at all """
+        return self.SO.Analysis.master[col].copy()
 
 
 class InterruptibleLoad(object):

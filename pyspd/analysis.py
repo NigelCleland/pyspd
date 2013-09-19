@@ -10,9 +10,11 @@ import pandas as pd
 
 class Analytics(object):
     """docstring for Analytics"""
-    def __init__(self, lp):
+    def __init__(self, SPD):
         super(Analytics, self).__init__()
-        self.lp = lp
+        self.lp = SPD.lp
+        self.ISO = SPD.ISO
+        SPD.ISO.Analysis = self
         self._parse_result()
         self.create_price_df()
         self.create_dispatch_df()
