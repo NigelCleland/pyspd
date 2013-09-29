@@ -16,11 +16,11 @@ class Analytics(object):
         self.ISO = SPD.ISO
         SPD.ISO.Analysis = self
         self._parse_result()
-        self.create_price_df()
-        self.create_dispatch_df()
-        self.create_reserve_df()
-        self.create_flow_df()
-        self.create_master()
+        # self.create_price_df()
+        # self.create_dispatch_df()
+        # self.create_reserve_df()
+        # self.create_flow_df()
+        # self.create_master()
 
 
     def create_master(self):
@@ -28,16 +28,29 @@ class Analytics(object):
         the entire system
         """
 
-        prices = self._parse_to_df([self.final_energy_prices,
+        prices, dispatch, risk, flows = (None, None, None, None)
+        try:
+            prices = self._parse_to_df([self.final_energy_prices,
                                     self.final_reserve_prices],
                                     parse_type="Constraint")
-        dispatch = self._parse_to_df([self.final_energy_dispatch,
+        except:
+            pass
+        try:
+            dispatch = self._parse_to_df([self.final_energy_dispatch,
                                       self.final_reserve_dispatch],
                                       parse_type="Variable")
-        risk = self._parse_to_df([self.final_risk_requirements],
+        except:
+            pass
+        try:
+            risk = self._parse_to_df([self.final_risk_requirements],
                                  parse_type="Variable")
-        flows = self._parse_to_df([self.final_branch_flow],
+        except:
+            pass
+        try:
+            flows = self._parse_to_df([self.final_branch_flow],
                                   parse_type="Variable")
+        except:
+            pass
 
         self.master = pd.concat([prices, dispatch, flows, risk], axis=1)
 

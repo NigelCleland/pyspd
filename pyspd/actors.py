@@ -674,6 +674,7 @@ class InterruptibleLoad(object):
         self.company = Company
         self.reserve_cost_func = lambda x: 0
 
+        self.SO = SO
         Node._add_interruptible_load(self)
         Company._add_interruptible_load(self)
 
@@ -736,6 +737,9 @@ class InterruptibleLoad(object):
     def _total_profit(self):
         self.total_profit = self.total_revenue - self.total_cost
         self.total_profit.name = self._name("Total Profit")
+
+    def _name(self, adj):
+        return " ".join([self.name, adj])
 
     def _query(self, col):
         """ Note that this is terribly kludgy and I don't like it at all """

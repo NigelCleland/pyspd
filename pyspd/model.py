@@ -164,14 +164,16 @@ class SPDModel(object):
             n2 = '_'.join([node, 'Nodal_Transmission'])
 
             # Net Injections from Energy and Demand
+
             self.addC(node_inj[node] == self.SUM([energy_offer[i]
                                                  for i in nodal_stations[node]]
-                                                 ) - nodal_demand[node] + eps,
+                                                 ) - nodal_demand[node] - eps,
                                                   n1)
 
             # Net Injection from transmission
+
             self.addC(node_inj[node] == self.SUM([branch_flow[t] *
-                    flow_dir[node][t] for t in flow_map[node]]), n2)
+                        flow_dir[node][t] for t in flow_map[node]]), n2)
 
     def _energy_offers(self):
         """Energy offer constraints
@@ -221,6 +223,7 @@ class SPDModel(object):
         bflows = self.branch_flow
         bnames = self.ISO.branch_names
         bcapacity = self.ISO.branch_capacity
+        eps = 0.00000001
 
         for i in bnames:
             n1 = '_'.join([i, 'Pos_flow'])
@@ -242,6 +245,7 @@ class SPDModel(object):
         roffers = self.reserve_offers
         eoffers = self.energy_offers
         rprop = self.ISO.reserve_station_proportion
+        eps = 0.00000001
 
         for i in spin_stations:
             name = '_'.join([i, 'Reserve_Proportion'])
@@ -257,10 +261,11 @@ class SPDModel(object):
         roffers = self.reserve_offers
         eoffers = self.energy_offers
         tot_capacity = self.ISO.total_station_capacity
+        eps = 0.00000001
 
         for i in spin_stations:
             name = '_'.join([i, 'Total_Capacity'])
-            self.addC(roffers[i] + eoffers[i] <= tot_capacity[i], name)
+            self.addC(roffers[i] + eoffers[i] <= tot_capacity[i] + eps, name)
 
     def _generator_risk(self):
         """ Risk for generators
@@ -326,7 +331,7 @@ class SPDModel(object):
             name = '_'.join([i, 'Reserve_Price'])
             self.addC(self.SUM([roffer[j]
                                for j in rzone_stations[i]]
-                               ) - rzone_risk[i] >= eps, name)
+                               ) >= rzone_risk[i] +  eps, name)
 
 if __name__ == '__main__':
     pass
