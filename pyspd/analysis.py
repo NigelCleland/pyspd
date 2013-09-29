@@ -7,6 +7,7 @@ from collections import defaultdict
 
 # C Libraries
 import pandas as pd
+import numpy as np
 
 class Analytics(object):
     """docstring for Analytics"""
@@ -16,11 +17,11 @@ class Analytics(object):
         self.ISO = SPD.ISO
         SPD.ISO.Analysis = self
         self._parse_result()
-        # self.create_price_df()
-        # self.create_dispatch_df()
-        # self.create_reserve_df()
-        # self.create_flow_df()
-        # self.create_master()
+        #self.create_price_df()
+        #self.create_dispatch_df()
+        #self.create_reserve_df()
+        #self.create_flow_df()
+        #self.create_master()
 
 
     def create_master(self):
@@ -156,7 +157,11 @@ class Analytics(object):
             ind_key = ' '.join([keydict['iter-actor'],
                                 keydict['iter-actor-var'].title()])
             name = ' '.join([keydict['result-actor'], keydict['variable']])
-            sample_dict[name][keydict['var-value']] = int(value)
+            if value == None:
+                value = np.nan
+            else:
+                value = int(value)
+            sample_dict[name][keydict['var-value']] = value
 
         df = pd.DataFrame(sample_dict)
         df.index.name = ind_key
