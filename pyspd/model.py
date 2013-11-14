@@ -34,10 +34,10 @@ class SPDModel(object):
         self.ISO = ISO
         ISO.SPD = self
 
-    def full_run(self):
+    def full_run(self, solver=pulp.PULP_CBC_CMD()):
         """ Convenience function to compile a full run """
         self.create_lp()
-        self.solve_lp(pulp.PULP_CBC_CMD())
+        self.solve_lp(solver)
 
     def create_lp(self):
         """ Publically exposed API
