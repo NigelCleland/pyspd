@@ -160,7 +160,7 @@ class Analytics(object):
             if value == None:
                 value = np.nan
             else:
-                value = int(value)
+                value = float(value)
             sample_dict[name][keydict['var-value']] = value
 
         df = pd.DataFrame(sample_dict)
