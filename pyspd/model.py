@@ -279,14 +279,16 @@ class SPDModel(object):
 
         rzone_stations = self.ISO.reserve_zone_generators
         eoffers = self.energy_offers
+        station_risk = self.ISO.energy_station_risk
 
         # Introduce a buffer to ensure the duals work
         eps = 0.00000001
 
         for i in rzones:
             for j in rzone_stations[i]:
-                name = '_'.join([i, j, 'Generator_Risk'])
-                self.addC(rzone_risk[i] >= eoffers[j] + eps, name)
+                if station_risk[j]:
+                    name = '_'.join([i, j, 'Generator_Risk'])
+                    self.addC(rzone_risk[i] >= eoffers[j] + eps, name)
 
     def _transmission_risk(self):
         """ Risk for a Transmission line

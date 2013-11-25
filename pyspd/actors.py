@@ -103,6 +103,7 @@ class SystemOperator(object):
             self.energy_station_names.append(name)
             self.energy_station_capacity[name] = station.energy_offer
             self.energy_station_price[name] = station.energy_price
+            self.energy_station_risk[name] = station.risk
 
             self.reserve_station_names.append(name)
             self.reserve_station_capacity[name] = station.reserve_offer
@@ -214,6 +215,7 @@ class SystemOperator(object):
         self.reserve_station_proportion = {}
         self.reserve_station_capacity = {}
         self.total_station_capacity = {}
+        self.energy_station_risk = {}
 
         self.nodes = []
         self.node_names = []
@@ -518,12 +520,13 @@ class Station(object):
 
     """
 
-    def __init__(self, name, SO, Node, Company, capacity=0):
+    def __init__(self, name, SO, Node, Company, capacity=0, risk=True):
         super(Station, self).__init__()
         self.name = name
         self.node = Node
         self.company = Company
         self.capacity = capacity
+        self.risk = risk
 
         Node._add_station(self)
         Company._add_station(self)
